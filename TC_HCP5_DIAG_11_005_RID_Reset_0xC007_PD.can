@@ -5,7 +5,7 @@ includes
 }
 
 /*=============================================================================
-  Test Case : TC_HCP5_DIAG_11_005_RID_Reset_$C007_PD
+  Test Case : TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD
   Source     : HCP5_SysTest
   Domain     : PD
   Purpose    : The test checks that RID 0xC007 (SFD Reset) is correctly
@@ -34,16 +34,13 @@ includes
 
   Post-Conditions: none
 =============================================================================*/
-testcase TC_HCP5_DIAG_11_005_RID_Reset_$C007_PD()
+testcase TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD()
 {
-  diagRequest  HCP5_Diag_PD.* req;
-  diagResponse HCP5_Diag_PD.* resp;
+  diagRequest  HCP5_Diag_PD.RoutineResTknC007 req;
+  diagResponse HCP5_Diag_PD.RoutineResTknC007 resp;
 
   diagRequest  HCP5_Diag_PD.SFD_Unlock req2;
   diagResponse HCP5_Diag_PD.SFD_Unlock resp2;
-
-  diagRequest  HCP5_Diag_PD.* didReq;
-  diagResponse HCP5_Diag_PD.* didResp;
 
   byte routineData[1];
   byte response[4095];
@@ -55,7 +52,7 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_$C007_PD()
   long len;
   long receivedNRC;
 
-  write("=== TC_HCP5_DIAG_11_005_RID_Reset_$C007_PD START ===");
+  write("=== TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD START ===");
 
   /*==========================================================
     PRECONDITIONS
@@ -134,7 +131,13 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_$C007_PD()
     testStepPass("Result 2", "SFD unlock token generated successfully");
   }
 
+  write("DEBUG: gSfdUnlockToken value = '%s'", gSfdUnlockToken);
+  write("DEBUG: gSfdUnlockToken length = %d", strlen(gSfdUnlockToken));
+
   unlockLen = HexStringToByteArray(gSfdUnlockToken, unlockBytes);
+
+  write("DEBUG: HexStringToByteArray returned len = %d", unlockLen);
+
   if (unlockLen <= 0)
   {
     testStepFail("Result 2", "Failed to convert unlock token to byte array (len=%d)", unlockLen);
@@ -203,7 +206,7 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_$C007_PD()
   ======================================================*/
   testStep("Step 4", "Read DID 0x0174 to confirm SFD state after reset");
 
-  len = UdsReadDid(0x0174, didReq, didResp, readBuf, elcount(readBuf), 5000);
+  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
   if (len > 0)
   {
@@ -224,10 +227,10 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_$C007_PD()
   ==========================================================*/
   testStep("Postcondition", "none");
 
-  write("=== TC_HCP5_DIAG_11_005_RID_Reset_$C007_PD END ===");
+  write("=== TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD END ===");
 }
 
 void MainTest()
 {
-  TC_HCP5_DIAG_11_005_RID_Reset_$C007_PD();
+  TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD();
 }

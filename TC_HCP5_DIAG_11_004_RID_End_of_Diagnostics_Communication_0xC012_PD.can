@@ -5,7 +5,7 @@ includes
 }
 
 /*=============================================================================
-  Test Case : TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_$C012_PD
+  Test Case : TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD
   Source     : HCP5_SysTest
   Domain     : PD
   Purpose    : The test checks that RID 0xC012 (End of Diagnostics Communication)
@@ -35,10 +35,10 @@ includes
 
   Post-Conditions: none
 =============================================================================*/
-testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_$C012_PD()
+testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
 {
-  diagRequest  HCP5_Diag_PD.* req;
-  diagResponse HCP5_Diag_PD.* resp;
+  diagRequest  HCP5_Diag_PD.E2E_finish req;
+  diagResponse HCP5_Diag_PD.E2E_finish resp;
 
   byte routineData[1];
   byte response[4095];
@@ -46,7 +46,7 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_$C012_PD()
   long respLen;
   long receivedNRC;
 
-  write("=== TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_$C012_PD START ===");
+  write("=== TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD START ===");
 
   /*==========================================================
     PRECONDITIONS
@@ -66,7 +66,7 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_$C012_PD()
     return;
   }
 
-  rc = SFD_lock();
+  rc = SFD_lock_PD();
   if (rc != 0)
   {
     testStepFail("Precondition", "Failed to lock SFD");
@@ -167,6 +167,13 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_$C012_PD()
   ======================================================*/
   testStep("Step 4", "Enter Programming Session 0x02");
 
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 4", "Failed to enter Extended Session before Programming Session");
+    return;
+  }
+
   rc = SetProgrammingDiagnosticSession_PD(3000);
   if (rc != 0)
   {
@@ -209,10 +216,10 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_$C012_PD()
   ==========================================================*/
   testStep("Postcondition", "none");
 
-  write("=== TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_$C012_PD END ===");
+  write("=== TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD END ===");
 }
 
 void MainTest()
 {
-  TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_$C012_PD();
+  TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD();
 }

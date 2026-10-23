@@ -11,7 +11,7 @@ variables
 }
 
 /*=============================================================================
-  Test Case : TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD
+  Test Case : TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_0xC004_PD
   Source     : HCP5_SysTest
   Domain     : PD
   Purpose    : Verify that RoutineControl RID 0xC004 (SFD Unlock Individual
@@ -48,16 +48,13 @@ variables
 
   Post-Conditions: none
 =============================================================================*/
-testcase TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD()
+testcase TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_0xC004_PD()
 {
   diagRequest  HCP5_Diag_PD.SFD_Unlock req;
   diagResponse HCP5_Diag_PD.SFD_Unlock resp;
 
   diagRequest  HCP5_Diag_PD.SFD_Lock req2;
   diagResponse HCP5_Diag_PD.SFD_Lock resp2;
-
-  diagRequest  HCP5_Diag_PD.* didReq;
-  diagResponse HCP5_Diag_PD.* didResp;
 
   byte unlockBytes[4096];
   byte modifiedToken[4096];
@@ -72,7 +69,7 @@ testcase TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD()
   long i;
   long receivedNRC;
 
-  write("=== TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD START ===");
+  write("=== TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_0xC004_PD START ===");
 
   /*==========================================================
     PRECONDITIONS
@@ -349,7 +346,7 @@ testcase TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD()
 
   testStep("Step 5b", "Read DID 0x0174 to confirm SFD unlock state after C005 lock");
 
-  len = UdsReadDid(0x0174, didReq, didResp, readBuf, elcount(readBuf), 5000);
+  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
   if (len > 0)
   {
@@ -373,10 +370,10 @@ testcase TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD()
   ==========================================================*/
   testStep("Postcondition", "none");
 
-  write("=== TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD END ===");
+  write("=== TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_0xC004_PD END ===");
 }
 
 void MainTest()
 {
-  TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD();
+  TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_0xC004_PD();
 }

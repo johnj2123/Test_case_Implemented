@@ -5,13 +5,13 @@ includes
 }
 
 /*=============================================================================
-  Test Case : TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD
+  Test Case : TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD
   Source     : HCP5_SysTest
   Domain     : PD
-  Purpose    : The test checks that the content of the DID 0x0174 Unlock State
-               is correctly implemented on PD, and that it can only be read in
-               Default and Extended Diagnostic Session (not in Programming
-               Session).
+  Purpose    : The test checks that the content of the DID 0x3C0E Protection
+               Method is correctly implemented on PD, and that it can only be
+               read in Default and Extended Diagnostic Session (not in
+               Programming Session).
 
   Preconditions:
     1. Clamp 30 enabled
@@ -22,30 +22,27 @@ includes
     6. Default Diagnostic Session 0x01
 
   Test Steps / Expected Results:
-    1. Send the $0174 reading request (0x22) in Default Session
+    1. Send the 0x3C0E reading request (0x22) in Default Session
        -> Positive response received
     2. Enter Programming Session 0x02
        -> (session transition)
-    3. Send the $0174 reading request (0x22) in Programming Session
+    3. Send the 0x3C0E reading request (0x22) in Programming Session
        -> Negative response received with NRC 0x31
     4. Enter Extended Diagnostics Session 0x03
        -> (session transition)
-    5. Send the $0174 reading request (0x22) in Extended Session
+    5. Send the 0x3C0E reading request (0x22) in Extended Session
        -> Positive response received
 
   Post-Conditions: none
 =============================================================================*/
-testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD()
+testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
 {
-  diagRequest  HCP5_Diag_PD.* req;
-  diagResponse HCP5_Diag_PD.* resp;
-
   byte readBuf[4095];
   long rc;
   long len;
   long receivedNRC;
 
-  write("=== TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD START ===");
+  write("=== TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD START ===");
 
   /*==========================================================
     PRECONDITIONS
@@ -65,7 +62,7 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD()
     return;
   }
 
-  rc = SFD_lock();
+  rc = SFD_lock_PD();
   if (rc != 0)
   {
     testStepFail("Precondition", "Failed to lock SFD");
@@ -89,16 +86,16 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD()
 
   /*======================================================
     STEP 1
-    Send the $0174 reading request (0x22) in Default Session
+    Send the 0x3C0E reading request (0x22) in Default Session
     Expected: Positive response received
   ======================================================*/
-  testStep("Step 1", "Send the $0174 reading request in Default Session");
+  testStep("Step 1", "Send the 0x3C0E reading request in Default Session");
 
-  len = UdsReadDid(0x0174, req, resp, readBuf, elcount(readBuf), 5000);
+  len = ReadDid_PD(0x3C0E, readBuf, elcount(readBuf));
 
   if (len > 0)
   {
-    testStepPass("Result 1", "Positive response received for DID 0x0174 (len=%d)", len);
+    testStepPass("Result 1", "Positive response received for DID 0x3C0E (len=%d)", len);
   }
   else if (len <= -256)
   {
@@ -107,7 +104,7 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD()
   }
   else
   {
-    testStepFail("Result 1", "Read DID 0x0174 failed, rc=%d", len);
+    testStepFail("Result 1", "Read DID 0x3C0E failed, rc=%d", len);
   }
 
   /*======================================================
@@ -115,6 +112,13 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD()
     Enter Programming Session 0x02
   ======================================================*/
   testStep("Step 2", "Enter Programming Session 0x02");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 2", "Failed to enter Extended Session before Programming Session");
+    return;
+  }
 
   rc = SetProgrammingDiagnosticSession_PD(3000);
   if (rc != 0)
@@ -129,12 +133,12 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD()
 
   /*======================================================
     STEP 3
-    Send the $0174 reading request (0x22) in Programming Session
+    Send the 0x3C0E reading request (0x22) in Programming Session
     Expected: Negative response received with NRC 0x31
   ======================================================*/
-  testStep("Step 3", "Send the $0174 reading request in Programming Session");
+  testStep("Step 3", "Send the 0x3C0E reading request in Programming Session");
 
-  len = UdsReadDid(0x0174, req, resp, readBuf, elcount(readBuf), 5000);
+  len = ReadDid_PD(0x3C0E, readBuf, elcount(readBuf));
 
   if (len <= -256)
   {
@@ -179,16 +183,16 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD()
 
   /*======================================================
     STEP 5
-    Send the $0174 reading request (0x22) in Extended Session
+    Send the 0x3C0E reading request (0x22) in Extended Session
     Expected: Positive response received
   ======================================================*/
-  testStep("Step 5", "Send the $0174 reading request in Extended Session");
+  testStep("Step 5", "Send the 0x3C0E reading request in Extended Session");
 
-  len = UdsReadDid(0x0174, req, resp, readBuf, elcount(readBuf), 5000);
+  len = ReadDid_PD(0x3C0E, readBuf, elcount(readBuf));
 
   if (len > 0)
   {
-    testStepPass("Result 5", "Positive response received for DID 0x0174 (len=%d)", len);
+    testStepPass("Result 5", "Positive response received for DID 0x3C0E (len=%d)", len);
   }
   else if (len <= -256)
   {
@@ -197,7 +201,7 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD()
   }
   else
   {
-    testStepFail("Result 5", "Read DID 0x0174 failed, rc=%d", len);
+    testStepFail("Result 5", "Read DID 0x3C0E failed, rc=%d", len);
   }
 
   /*==========================================================
@@ -205,10 +209,10 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD()
   ==========================================================*/
   testStep("Postcondition", "none");
 
-  write("=== TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD END ===");
+  write("=== TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD END ===");
 }
 
 void MainTest()
 {
-  TC_HCP5_DIAG_11_001_DID_Unlock_State_$0174_PD();
+  TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD();
 }

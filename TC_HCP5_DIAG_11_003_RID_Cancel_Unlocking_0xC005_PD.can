@@ -5,7 +5,7 @@ includes
 }
 
 /*=============================================================================
-  Test Case : TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD
+  Test Case : TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD
   Source     : HCP5_SysTest
   Domain     : PD
   Purpose    : The test checks that RID 0xC005 (Cancel Unlocking / SFD Lock)
@@ -33,13 +33,10 @@ includes
 
   Post-Conditions: none
 =============================================================================*/
-testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD()
+testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
 {
   diagRequest  HCP5_Diag_PD.SFD_Lock req;
   diagResponse HCP5_Diag_PD.SFD_Lock resp;
-
-  diagRequest  HCP5_Diag_PD.* didReq;
-  diagResponse HCP5_Diag_PD.* didResp;
 
   byte routineData[1];
   byte response[4095];
@@ -49,7 +46,7 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD()
   long len;
   long receivedNRC;
 
-  write("=== TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD START ===");
+  write("=== TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD START ===");
 
   /*==========================================================
     PRECONDITIONS
@@ -153,7 +150,7 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD()
   ======================================================*/
   testStep("Step 4", "Read DID 0x0174 to confirm SFD locked state");
 
-  len = UdsReadDid(0x0174, didReq, didResp, readBuf, elcount(readBuf), 5000);
+  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
   if (len > 0)
   {
@@ -174,10 +171,10 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD()
   ==========================================================*/
   testStep("Postcondition", "none");
 
-  write("=== TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD END ===");
+  write("=== TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD END ===");
 }
 
 void MainTest()
 {
-  TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD();
+  TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD();
 }

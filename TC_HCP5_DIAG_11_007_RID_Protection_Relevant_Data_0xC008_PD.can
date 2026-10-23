@@ -5,14 +5,14 @@ includes
 }
 
 /*=============================================================================
-  Test Case : TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD
+  Test Case : TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD
   Source     : HCP5_SysTest
   Domain     : PD
-  Purpose    : Verify that RoutineControl RID 0xC011 (Security Token Transfer)
-               is correctly implemented on PD:
+  Purpose    : Verify that RoutineControl RID 0xC008 (Protection-Relevant Data /
+               E2E Generate Token) is correctly implemented on PD:
                - Rejected with NRC 0x31 in Default Session (0x01)
-               - Returns positive response (71 01 C0 11 ...) in Extended
-                 Diagnostic Session (0x03) with a valid SFD unlock token
+               - Returns positive response (71 01 C0 08 <token_data...>) in
+                 Extended Diagnostic Session (0x03), with response length >= 5
                - Rejected with NRC 0x31 in Programming Session (0x02)
 
   Preconditions:
@@ -21,37 +21,35 @@ includes
     3. Restbus simulation running (all ECUs transmit KN and NMH messages)
     4. Diagnostic client connected to Diag-CAN
     5. ECU SFD locked
-    6. Unlock token generated via GenerateUnlocktoken_PD()
-    7. Default Diagnostic Session (0x01) active
+    6. Default Diagnostic Session (0x01) active
 
   Test Steps / Expected Results:
-    1. Send RID 0xC011 StartRoutine (31 01 C0 11 <token>) in Default Session
+    1. Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Default Session
        -> Negative response received with NRC 0x31
     2. Enter Extended Diagnostics Session 0x03
        -> Session transition confirmed
-    3. Send RID 0xC011 StartRoutine with valid token in Extended Session
-       -> Positive response received (71 01 C0 11 ...)
+    3. Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Extended Session
+       -> Positive response received (71 01 C0 08 <token_data...>), length >= 5,
+          response[0]==0x71, response[2]==0xC0, response[3]==0x08
     4. Enter Programming Session 0x02
        -> Session transition confirmed
-    5. Send RID 0xC011 StartRoutine with token in Programming Session
+    5. Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Programming Session
        -> Negative response received with NRC 0x31
 
   Post-Conditions: none
 =============================================================================*/
-testcase TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD()
+testcase TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD()
 {
-  diagRequest  HCP5_Diag_PD.* req;
-  diagResponse HCP5_Diag_PD.* resp;
+  diagRequest  HCP5_Diag_PD.E2E_generate_token req;
+  diagResponse HCP5_Diag_PD.E2E_generate_token resp;
 
-  byte unlockBytes[4096];
-  byte response[4096];
-
+  byte routineData[1];
+  byte response[4095];
   long rc;
-  long unlockLen;
   long respLen;
   long receivedNRC;
 
-  write("=== TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD START ===");
+  write("=== TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD START ===");
 
   /*==========================================================
     PRECONDITIONS
@@ -71,7 +69,7 @@ testcase TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD()
     return;
   }
 
-  rc = SFD_lock();
+  rc = SFD_lock_PD();
   if (rc != 0)
   {
     testStepFail("Precondition", "Failed to lock SFD");
@@ -93,28 +91,15 @@ testcase TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD()
     testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
   }
 
-  rc = GenerateUnlocktoken_PD();
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to generate unlock token");
-    return;
-  }
-  else
-  {
-    testStepPass("Precondition", "Unlock token generated successfully");
-  }
-
-  unlockLen = HexStringToByteArray(gSfdUnlockToken, unlockBytes);
-  testStepPass("Precondition", "Unlock token converted to byte array, length=%d", unlockLen);
-
   /*======================================================
     STEP 1
-    Send RID 0xC011 StartRoutine with unlock token in Default Session
-    Expected: Negative response with NRC 0x31
+    Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Default Session
+    Expected: Negative response received with NRC 0x31
   ======================================================*/
-  testStep("Step 1", "Send RID 0xC011 StartRoutine with unlock token in Default Session");
+  testStep("Step 1", "Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Default Session");
 
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC011, unlockBytes, unlockLen, response, elcount(response));
+  routineData[0] = 0x02;
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC008, routineData, 1, response, elcount(response));
 
   if (respLen <= -256)
   {
@@ -152,38 +137,42 @@ testcase TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD()
 
   /*======================================================
     STEP 3
-    Send RID 0xC011 StartRoutine with valid token in Extended Session
-    Expected: Positive response (71 01 C0 11 ...)
+    Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Extended Session
+    Expected: Positive response (71 01 C0 08 <token_data...>), length >= 5
   ======================================================*/
-  testStep("Step 3", "Send RID 0xC011 StartRoutine with valid token in Extended Session");
+  testStep("Step 3", "Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Extended Session");
 
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC011, unlockBytes, unlockLen, response, elcount(response));
+  routineData[0] = 0x02;
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC008, routineData, 1, response, elcount(response));
 
   if (respLen > 0)
   {
-    if (response[0] == 0x71 && response[2] == 0xC0 && response[3] == 0x11)
+    if (response[0] == 0x71 && response[2] == 0xC0 && response[3] == 0x08 && respLen >= 5)
     {
       testStepPass("Result 3",
-                   "Positive response received for RID 0xC011 (71 01 C0 11 ...), len=%d",
+                   "Positive response received for RID 0xC008 (71 01 C0 08 <token>), len=%d",
                    respLen);
+    }
+    else if (respLen < 5)
+    {
+      testStepFail("Result 3",
+                   "Response received but length too short. Expected >= 5, got %d", respLen);
     }
     else
     {
       testStepFail("Result 3",
-                   "Unexpected RID in response: 0x%02X%02X",
-                   response[2], response[3]);
+                   "Response received but content mismatch: response[0]=0x%02X response[2]=0x%02X response[3]=0x%02X",
+                   response[0], response[2], response[3]);
     }
   }
   else if (respLen <= -256)
   {
     receivedNRC = (-respLen) - 256;
-    testStepFail("Result 3",
-                 "Negative response received in Extended Session, NRC=0x%02X", receivedNRC);
+    testStepFail("Result 3", "Negative response received, NRC=0x%02X", receivedNRC);
   }
   else
   {
-    testStepFail("Result 3",
-                 "SendRoutineControl RID 0xC011 failed in Extended Session, rc=%d", respLen);
+    testStepFail("Result 3", "SendRoutineControl RID 0xC008 failed, rc=%d", respLen);
   }
 
   /*======================================================
@@ -192,10 +181,10 @@ testcase TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD()
   ======================================================*/
   testStep("Step 4", "Enter Programming Session 0x02");
 
-  rc = SetDefaultDiagnosticSession_PD(3000);
+  rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0)
   {
-    testStepFail("Result 4", "Failed to return to Default Session before Programming Session");
+    testStepFail("Result 4", "Failed to enter Extended Session before Programming Session");
     return;
   }
 
@@ -212,12 +201,13 @@ testcase TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD()
 
   /*======================================================
     STEP 5
-    Send RID 0xC011 StartRoutine with token in Programming Session
-    Expected: Negative response with NRC 0x31
+    Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Programming Session
+    Expected: Negative response received with NRC 0x31
   ======================================================*/
-  testStep("Step 5", "Send RID 0xC011 StartRoutine with token in Programming Session");
+  testStep("Step 5", "Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Programming Session");
 
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC011, unlockBytes, unlockLen, response, elcount(response));
+  routineData[0] = 0x02;
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC008, routineData, 1, response, elcount(response));
 
   if (respLen <= -256)
   {
@@ -241,10 +231,10 @@ testcase TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD()
   ==========================================================*/
   testStep("Postcondition", "none");
 
-  write("=== TC_HCP5_DIAG_11_009 END ===");
+  write("=== TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD END ===");
 }
 
 void MainTest()
 {
-  TC_HCP5_DIAG_11_009_RID_Security_Token_Transfer_$C011_PD();
+  TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD();
 }
