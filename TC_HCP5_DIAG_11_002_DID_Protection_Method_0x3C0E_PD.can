@@ -55,6 +55,8 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
 
+  testWaitForTimeout(500);
+
   rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0)
   {
@@ -73,6 +75,8 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
     testStepPass("Precondition", "ECU SFD locked");
   }
 
+  testWaitForTimeout(500);
+
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0)
   {
@@ -83,6 +87,8 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   {
     testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 1
@@ -107,6 +113,8 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
     testStepFail("Result 1", "Read DID 0x3C0E failed, rc=%d", len);
   }
 
+  testWaitForTimeout(500);
+
   /*======================================================
     STEP 2
     Enter Programming Session 0x02
@@ -130,6 +138,8 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   {
     testStepPass("Result 2", "Entered Programming Session 0x02");
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 3
@@ -181,6 +191,8 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
     testStepPass("Result 4", "Entered Extended Diagnostic Session 0x03");
   }
 
+  testWaitForTimeout(500);
+
   /*======================================================
     STEP 5
     Send the 0x3C0E reading request (0x22) in Extended Session
@@ -207,6 +219,8 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   /*==========================================================
     POST-CONDITIONS
   ==========================================================*/
+  testWaitForTimeout(1000);
+
   testStep("Postcondition", "none");
 
   write("=== TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD END ===");

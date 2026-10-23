@@ -65,6 +65,8 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD()
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
 
+  testWaitForTimeout(500);
+
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0)
   {
@@ -75,6 +77,8 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD()
   {
     testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 1
@@ -102,6 +106,8 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD()
     testStepFail("Result 1", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
   }
 
+  testWaitForTimeout(500);
+
   /*======================================================
     STEP 2
     Enter Extended Diagnostics Session 0x03, generate unlock
@@ -120,6 +126,8 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD()
     testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
   }
 
+  testWaitForTimeout(500);
+
   rc = GenerateUnlocktoken_PD();
   if (rc != 0)
   {
@@ -130,6 +138,8 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD()
   {
     testStepPass("Result 2", "SFD unlock token generated successfully");
   }
+
+  testWaitForTimeout(500);
 
   write("DEBUG: gSfdUnlockToken value = '%s'", gSfdUnlockToken);
   write("DEBUG: gSfdUnlockToken length = %d", strlen(gSfdUnlockToken));
@@ -168,6 +178,8 @@ testcase TC_HCP5_DIAG_11_005_RID_Reset_0xC007_PD()
     testStepFail("Result 2", "SendRoutineControl RID 0xC004 (SFD Unlock) failed, rc=%d", respLen);
     return;
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 3

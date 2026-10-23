@@ -59,6 +59,8 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
 
+  testWaitForTimeout(500);
+
   rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0)
   {
@@ -77,6 +79,8 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
     testStepPass("Precondition", "ECU SFD locked");
   }
 
+  testWaitForTimeout(500);
+
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0)
   {
@@ -87,6 +91,8 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
   {
     testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 1
@@ -114,6 +120,8 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
     testStepFail("Result 1", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
   }
 
+  testWaitForTimeout(500);
+
   /*======================================================
     STEP 2
     Enter Extended Diagnostics Session 0x03
@@ -130,6 +138,8 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
   {
     testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 3
@@ -161,6 +171,8 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
     testStepFail("Result 3", "SendRoutineControl RID 0xC012 failed, rc=%d", respLen);
   }
 
+  testWaitForTimeout(500);
+
   /*======================================================
     STEP 4
     Enter Programming Session 0x02
@@ -184,6 +196,8 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
   {
     testStepPass("Result 4", "Entered Programming Session 0x02");
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 5
@@ -214,6 +228,8 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
   /*==========================================================
     POST-CONDITIONS
   ==========================================================*/
+  testWaitForTimeout(1000);
+
   testStep("Postcondition", "none");
 
   write("=== TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD END ===");

@@ -59,6 +59,8 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
 
+  testWaitForTimeout(500);
+
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0)
   {
@@ -69,6 +71,8 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   {
     testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 1
@@ -96,6 +100,8 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
     testStepFail("Result 1", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
   }
 
+  testWaitForTimeout(500);
+
   /*======================================================
     STEP 2
     Enter Extended Diagnostics Session 0x03
@@ -112,6 +118,8 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   {
     testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 3
@@ -143,6 +151,8 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
     testStepFail("Result 3", "SendRoutineControl RID 0xC005 failed, rc=%d", respLen);
   }
 
+  testWaitForTimeout(500);
+
   /*======================================================
     STEP 4
     Read DID 0x0174 in Extended Session
@@ -169,6 +179,8 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   /*==========================================================
     POST-CONDITIONS
   ==========================================================*/
+  testWaitForTimeout(1000);
+
   testStep("Postcondition", "none");
 
   write("=== TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD END ===");
