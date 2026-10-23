@@ -1,0 +1,183 @@
+includes
+{
+  #include "../diaglibrary.cin"
+  #include "../DiagLibraryAI.cin"
+}
+
+/*=============================================================================
+  Test Case : TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD
+  Source     : HCP5_SysTest
+  Domain     : PD
+  Purpose    : The test checks that RID 0xC005 (Cancel Unlocking / SFD Lock)
+               is correctly implemented on PD. The routine must be rejected
+               with NRC 0x31 in Default Session, and must return a positive
+               response in Extended Diagnostic Session. After execution the
+               SFD locked state is confirmed via DID 0x0174.
+
+  Preconditions:
+    1. Clamp 30 enabled
+    2. Clamp 15 enabled
+    3. Restbus simulation running (all ECUs transmit KN and NMH messages)
+    4. Connect Diag Client to Diag-CAN
+    5. Default Diagnostic Session 0x01
+
+  Test Steps / Expected Results:
+    1. Send RID 0xC005 StartRoutine (0x31 0x01) in Default Session
+       -> Negative response received with NRC 0x31
+    2. Enter Extended Diagnostics Session 0x03
+       -> (session transition)
+    3. Send RID 0xC005 StartRoutine (0x31 0x01) in Extended Session
+       -> Positive response received (71 01 C0 05 ...)
+    4. Read DID 0x0174 in Extended Session
+       -> Positive response received (SFD locked state confirmed)
+
+  Post-Conditions: none
+=============================================================================*/
+testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD()
+{
+  diagRequest  HCP5_Diag_PD.SFD_Lock req;
+  diagResponse HCP5_Diag_PD.SFD_Lock resp;
+
+  diagRequest  HCP5_Diag_PD.* didReq;
+  diagResponse HCP5_Diag_PD.* didResp;
+
+  byte routineData[1];
+  byte response[4095];
+  byte readBuf[4095];
+  long rc;
+  long respLen;
+  long len;
+  long receivedNRC;
+
+  write("=== TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD START ===");
+
+  /*==========================================================
+    PRECONDITIONS
+  ==========================================================*/
+  EnableClamp30();
+  EnableClamp15();
+  StartRestBusSimulation();
+  testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
+
+  ConnectDiagClientToDiagCAN();
+  testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Precondition", "Failed to enter Default Diagnostic Session 0x01");
+    return;
+  }
+  else
+  {
+    testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
+  }
+
+  /*======================================================
+    STEP 1
+    Send RID 0xC005 StartRoutine in Default Session
+    Expected: Negative response received with NRC 0x31
+  ======================================================*/
+  testStep("Step 1", "Send RID 0xC005 StartRoutine in Default Session");
+
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC005, routineData, 0, response, elcount(response));
+
+  if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    if (receivedNRC == 0x31)
+    {
+      testStepPass("Result 1", "NRC 0x31 received as expected in Default Session");
+    }
+    else
+    {
+      testStepFail("Result 1", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
+    }
+  }
+  else
+  {
+    testStepFail("Result 1", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
+  }
+
+  /*======================================================
+    STEP 2
+    Enter Extended Diagnostics Session 0x03
+  ======================================================*/
+  testStep("Step 2", "Enter Extended Diagnostics Session 0x03");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 2", "Failed to enter Extended Diagnostic Session 0x03");
+    return;
+  }
+  else
+  {
+    testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
+  }
+
+  /*======================================================
+    STEP 3
+    Send RID 0xC005 StartRoutine in Extended Session
+    Expected: Positive response (71 01 C0 05 ...)
+  ======================================================*/
+  testStep("Step 3", "Send RID 0xC005 StartRoutine in Extended Session");
+
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC005, routineData, 0, response, elcount(response));
+
+  if (respLen > 0)
+  {
+    if (response[2] == 0xC0 && response[3] == 0x05)
+    {
+      testStepPass("Result 3", "Positive response received for RID 0xC005 (71 01 C0 05), len=%d", respLen);
+    }
+    else
+    {
+      testStepFail("Result 3", "Response received but RID echo mismatch: response[2]=0x%02X response[3]=0x%02X", response[2], response[3]);
+    }
+  }
+  else if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    testStepFail("Result 3", "Negative response received, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 3", "SendRoutineControl RID 0xC005 failed, rc=%d", respLen);
+  }
+
+  /*======================================================
+    STEP 4
+    Read DID 0x0174 in Extended Session
+    Expected: Positive response (SFD locked state confirmed)
+  ======================================================*/
+  testStep("Step 4", "Read DID 0x0174 to confirm SFD locked state");
+
+  len = UdsReadDid(0x0174, didReq, didResp, readBuf, elcount(readBuf), 5000);
+
+  if (len > 0)
+  {
+    testStepPass("Result 4", "Positive response received for DID 0x0174 - SFD locked state confirmed (len=%d)", len);
+  }
+  else if (len <= -256)
+  {
+    receivedNRC = (-len) - 256;
+    testStepFail("Result 4", "Negative response received for DID 0x0174, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 4", "Read DID 0x0174 failed, rc=%d", len);
+  }
+
+  /*==========================================================
+    POST-CONDITIONS
+  ==========================================================*/
+  testStep("Postcondition", "none");
+
+  write("=== TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD END ===");
+}
+
+void MainTest()
+{
+  TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_$C005_PD();
+}

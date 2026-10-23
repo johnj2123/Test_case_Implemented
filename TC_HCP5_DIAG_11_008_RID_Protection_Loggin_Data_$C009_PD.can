@@ -1,0 +1,225 @@
+includes
+{
+  #include "../diaglibrary.cin"
+  #include "../DiagLibraryAI.cin"
+}
+
+/*=============================================================================
+  Test Case : TC_HCP5_DIAG_11_008_RID_Protection_Loggin_Data_$C009_PD
+  Source     : HCP5_SysTest
+  Domain     : PD
+  Purpose    : Verify that RoutineControl RID 0xC009 (Protection Logging Data)
+               is correctly implemented on PD:
+               - Rejected with NRC 0x31 in Default Session (0x01)
+               - Returns positive response (71 01 C0 09 <data...>) in
+                 Extended Diagnostic Session (0x03)
+               - Rejected with NRC 0x31 in Programming Session (0x02)
+
+  Preconditions:
+    1. Clamp 30 enabled
+    2. Clamp 15 enabled
+    3. Restbus simulation running (all ECUs transmit KN and NMH messages)
+    4. Diagnostic client connected to Diag-CAN
+    5. ECU SFD locked
+    6. Default Diagnostic Session (0x01) active
+
+  Test Steps / Expected Results:
+    1. Send RID 0xC009 StartRoutine (31 01 C0 09) in Default Session
+       -> Negative response received with NRC 0x31
+    2. Enter Extended Diagnostics Session 0x03
+       -> Session transition confirmed
+    3. Send RID 0xC009 StartRoutine (31 01 C0 09) in Extended Session
+       -> Positive response received (71 01 C0 09 <data...>),
+          response[0]==0x71, response[2]==0xC0, response[3]==0x09
+    4. Enter Programming Session 0x02
+       -> Session transition confirmed
+    5. Send RID 0xC009 StartRoutine (31 01 C0 09) in Programming Session
+       -> Negative response received with NRC 0x31
+
+  Post-Conditions: none
+=============================================================================*/
+testcase TC_HCP5_DIAG_11_008_RID_Protection_Loggin_Data_$C009_PD()
+{
+  diagRequest  HCP5_Diag_PD.* req;
+  diagResponse HCP5_Diag_PD.* resp;
+
+  byte routineData[1];
+  byte response[4095];
+  long rc;
+  long respLen;
+  long receivedNRC;
+
+  write("=== TC_HCP5_DIAG_11_008_RID_Protection_Loggin_Data_$C009_PD START ===");
+
+  /*==========================================================
+    PRECONDITIONS
+  ==========================================================*/
+  EnableClamp30();
+  EnableClamp15();
+  StartRestBusSimulation();
+  testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
+
+  ConnectDiagClientToDiagCAN();
+  testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Precondition", "Failed to enter Extended Session for SFD lock");
+    return;
+  }
+
+  rc = SFD_lock();
+  if (rc != 0)
+  {
+    testStepFail("Precondition", "Failed to lock SFD");
+    return;
+  }
+  else
+  {
+    testStepPass("Precondition", "ECU SFD locked");
+  }
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Precondition", "Failed to enter Default Diagnostic Session 0x01");
+    return;
+  }
+  else
+  {
+    testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
+  }
+
+  /*======================================================
+    STEP 1
+    Send RID 0xC009 StartRoutine (31 01 C0 09) in Default Session
+    Expected: Negative response received with NRC 0x31
+  ======================================================*/
+  testStep("Step 1", "Send RID 0xC009 StartRoutine (31 01 C0 09) in Default Session");
+
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 0, response, elcount(response));
+
+  if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    if (receivedNRC == 0x31)
+    {
+      testStepPass("Result 1", "NRC 0x31 received as expected in Default Session");
+    }
+    else
+    {
+      testStepFail("Result 1", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
+    }
+  }
+  else
+  {
+    testStepFail("Result 1", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
+  }
+
+  /*======================================================
+    STEP 2
+    Enter Extended Diagnostics Session 0x03
+  ======================================================*/
+  testStep("Step 2", "Enter Extended Diagnostics Session 0x03");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 2", "Failed to enter Extended Diagnostic Session 0x03");
+    return;
+  }
+  else
+  {
+    testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
+  }
+
+  /*======================================================
+    STEP 3
+    Send RID 0xC009 StartRoutine (31 01 C0 09) in Extended Session
+    Expected: Positive response (71 01 C0 09 <data...>)
+  ======================================================*/
+  testStep("Step 3", "Send RID 0xC009 StartRoutine (31 01 C0 09) in Extended Session");
+
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 0, response, elcount(response));
+
+  if (respLen > 0)
+  {
+    if (response[0] == 0x71 && response[2] == 0xC0 && response[3] == 0x09)
+    {
+      testStepPass("Result 3",
+                   "Positive response received for RID 0xC009 (71 01 C0 09 <data>), len=%d",
+                   respLen);
+    }
+    else
+    {
+      testStepFail("Result 3",
+                   "Response received but content mismatch: response[0]=0x%02X response[2]=0x%02X response[3]=0x%02X",
+                   response[0], response[2], response[3]);
+    }
+  }
+  else if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    testStepFail("Result 3", "Negative response received, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 3", "SendRoutineControl RID 0xC009 failed, rc=%d", respLen);
+  }
+
+  /*======================================================
+    STEP 4
+    Enter Programming Session 0x02
+  ======================================================*/
+  testStep("Step 4", "Enter Programming Session 0x02");
+
+  rc = SetProgrammingDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 4", "Failed to enter Programming Session 0x02");
+    return;
+  }
+  else
+  {
+    testStepPass("Result 4", "Entered Programming Session 0x02");
+  }
+
+  /*======================================================
+    STEP 5
+    Send RID 0xC009 StartRoutine (31 01 C0 09) in Programming Session
+    Expected: Negative response received with NRC 0x31
+  ======================================================*/
+  testStep("Step 5", "Send RID 0xC009 StartRoutine (31 01 C0 09) in Programming Session");
+
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 0, response, elcount(response));
+
+  if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    if (receivedNRC == 0x31)
+    {
+      testStepPass("Result 5", "NRC 0x31 received as expected in Programming Session");
+    }
+    else
+    {
+      testStepFail("Result 5", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
+    }
+  }
+  else
+  {
+    testStepFail("Result 5", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
+  }
+
+  /*==========================================================
+    POST-CONDITIONS
+  ==========================================================*/
+  testStep("Postcondition", "none");
+
+  write("=== TC_HCP5_DIAG_11_008_RID_Protection_Loggin_Data_$C009_PD END ===");
+}
+
+void MainTest()
+{
+  TC_HCP5_DIAG_11_008_RID_Protection_Loggin_Data_$C009_PD();
+}

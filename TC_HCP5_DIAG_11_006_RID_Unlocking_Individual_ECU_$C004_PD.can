@@ -1,0 +1,382 @@
+includes
+{
+  #include "../diaglibrary.cin"
+  #include "../DiagLibraryAI.cin"
+}
+
+variables
+{
+  byte protectionRoles[7] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 };
+  char roleNames[7][32] = { "E2E", "EPTI", "BASIC", "EXTENDED", "SUPERUSER", "PRODUCTION", "OTA" };
+}
+
+/*=============================================================================
+  Test Case : TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD
+  Source     : HCP5_SysTest
+  Domain     : PD
+  Purpose    : Verify that RoutineControl RID 0xC004 (SFD Unlock Individual
+               ECU) is correctly implemented on PD:
+               - Rejected with NRC 0x31 in Default Session (0x01)
+               - Returns positive response (71 01 C0 04 XX 00) in Extended
+                 Diagnostic Session (0x03) with a valid token
+               - Returns positive response with status 0x01 or NRC 0x35/0x22
+                 when a modified (tampered) token is sent in Extended Session
+               - After locking via RID 0xC005, DID 0x0174 reports the
+                 current SFD unlock state
+
+  Preconditions:
+    1. Clamp 30 enabled
+    2. Clamp 15 enabled
+    3. Restbus simulation running (all ECUs transmit KN and NMH messages)
+    4. Diagnostic client connected to Diag-CAN
+    5. Default Diagnostic Session (0x01) active
+
+  Test Steps / Expected Results:
+    1. Send RID 0xC004 StartRoutine (31 01 C0 04) with valid unlock token
+       in Default Session
+       -> Negative response received with NRC 0x31
+    2. Enter Extended Diagnostics Session 0x03
+       -> Session transition confirmed
+    3. Send RID 0xC004 StartRoutine with valid unlock token in Extended Session
+       -> Positive response received (71 01 C0 04 XX 00)
+    4. Send RID 0xC004 StartRoutine with modified (tampered) unlock token
+       in Extended Session
+       -> Positive response with status byte 0x01, or NRC 0x35 / 0x22
+    5. Re-enter Extended Session, lock SFD via RID 0xC005, read DID 0x0174
+       -> RID 0xC005 returns positive response
+       -> DID 0x0174 read returns positive response (SFD state confirmed)
+
+  Post-Conditions: none
+=============================================================================*/
+testcase TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD()
+{
+  diagRequest  HCP5_Diag_PD.SFD_Unlock req;
+  diagResponse HCP5_Diag_PD.SFD_Unlock resp;
+
+  diagRequest  HCP5_Diag_PD.SFD_Lock req2;
+  diagResponse HCP5_Diag_PD.SFD_Lock resp2;
+
+  diagRequest  HCP5_Diag_PD.* didReq;
+  diagResponse HCP5_Diag_PD.* didResp;
+
+  byte unlockBytes[4096];
+  byte modifiedToken[4096];
+  byte response[4096];
+  byte routineData[1];
+  byte readBuf[4095];
+
+  long rc;
+  long unlockLen;
+  long respLen;
+  long len;
+  long i;
+  long receivedNRC;
+
+  write("=== TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD START ===");
+
+  /*==========================================================
+    PRECONDITIONS
+  ==========================================================*/
+  EnableClamp30();
+  EnableClamp15();
+  StartRestBusSimulation();
+  testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
+
+  ConnectDiagClientToDiagCAN();
+  testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
+
+  /* Generate valid SFD unlock token (C008 challenge + Python backend) */
+  rc = GenerateUnlocktoken_PD();
+  if (rc < 0)
+  {
+    testStepFail("Precondition", "GenerateUnlocktoken_PD failed, rc=%d", rc);
+    return;
+  }
+  testStepPass("Precondition", "SFD unlock token generated successfully");
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Precondition", "Failed to enter Default Diagnostic Session 0x01");
+    return;
+  }
+  else
+  {
+    testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
+  }
+
+  /* Convert hex-string token to byte array for use in RoutineControl */
+  unlockLen = HexStringToByteArray(gSfdUnlockToken, unlockBytes);
+
+  /*======================================================
+    STEP 1
+    Send RID 0xC004 StartRoutine with valid token in Default Session
+    Expected: Negative response with NRC 0x31
+             (requestOutOfRange - service not supported in this session)
+  ======================================================*/
+  testStep("Step 1", "Send RID 0xC004 StartRoutine (31 01 C0 04) [valid token] in Default Session");
+
+  respLen = SendRoutineControl(
+      req,
+      resp,
+      0x01,
+      0xC004,
+      unlockBytes,
+      unlockLen,
+      response,
+      elcount(response));
+
+  if (respLen == -(0x100 + 0x31))
+  {
+    testStepPass("Result 1", "NRC 0x31 received as expected in Default Session");
+  }
+  else if (respLen > 0)
+  {
+    testStepFail("Result 1",
+                 "Positive response received unexpectedly in Default Session (len=%d)",
+                 respLen);
+  }
+  else if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    testStepFail("Result 1", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 1", "SendRoutineControl RID 0xC004 failed, rc=%d", respLen);
+  }
+
+  /*======================================================
+    STEP 2
+    Enter Extended Diagnostics Session 0x03
+  ======================================================*/
+  testStep("Step 2", "Enter Extended Diagnostics Session 0x03");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 2", "Failed to enter Extended Diagnostic Session 0x03");
+    return;
+  }
+  else
+  {
+    testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 3
+    Send RID 0xC004 StartRoutine with valid token in Extended Session
+    Expected: Positive response (71 01 C0 04 XX 00)
+  ======================================================*/
+  testStep("Step 3",
+           "Send RID 0xC004 StartRoutine (31 01 C0 04) [valid token] in Extended Session");
+
+  respLen = SendRoutineControl(
+      req,
+      resp,
+      0x01,
+      0xC004,
+      unlockBytes,
+      unlockLen,
+      response,
+      elcount(response));
+
+  if (respLen > 0)
+  {
+    if ((response[0] == 0x71) &&
+        (response[1] == 0x01) &&
+        (response[2] == 0xC0) &&
+        (response[3] == 0x04) &&
+        (response[5] == 0x00))
+    {
+      testStepPass("Result 3",
+                   "Positive response received: 71 01 C0 04 XX 00 (token accepted, ECU unlocked)");
+    }
+    else
+    {
+      testStepFail("Result 3",
+                   "Response received but content unexpected: [0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [5]=0x%02X",
+                   response[0], response[1], response[2], response[3], response[5]);
+    }
+  }
+  else if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    testStepFail("Result 3",
+                 "Negative response received unexpectedly, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 3",
+                 "SendRoutineControl RID 0xC004 failed, rc=%d", respLen);
+  }
+
+  /*======================================================
+    STEP 4
+    Send RID 0xC004 with modified (tampered) token in Extended Session
+    Expected: Positive response with status byte 0x01 (signature mismatch),
+              OR NRC 0x35 (invalidKey) / NRC 0x22 (conditionsNotCorrect)
+  ======================================================*/
+  testWaitForTimeout(200);
+
+  for (i = 0; i < unlockLen; i++)
+  {
+    modifiedToken[i] = unlockBytes[i];
+  }
+  modifiedToken[unlockLen - 1] ^= 0x01;
+
+  write("unlockLen=%d  modifiedToken[%d] flipped last byte", unlockLen, unlockLen - 1);
+
+  testStep("Step 4",
+           "Send RID 0xC004 StartRoutine with modified token (last byte XOR 0x01) in Extended Session");
+
+  respLen = SendRoutineControl(
+      req,
+      resp,
+      0x01,
+      0xC004,
+      modifiedToken,
+      unlockLen,
+      response,
+      elcount(response));
+
+  if (respLen > 0)
+  {
+    if ((response[0] == 0x71) &&
+        (response[1] == 0x01) &&
+        (response[2] == 0xC0) &&
+        (response[3] == 0x04) &&
+        (response[5] == 0x01))
+    {
+      testStepPass("Result 4",
+                   "Positive response with status 0x01 received (tampered token rejected: 71 01 C0 04 XX 01)");
+    }
+    else
+    {
+      testStepFail("Result 4",
+                   "Response received but content unexpected: [0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [5]=0x%02X",
+                   response[0], response[1], response[2], response[3], response[5]);
+    }
+  }
+  else if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    if ((receivedNRC == 0x35) || (receivedNRC == 0x22))
+    {
+      testStepPass("Result 4",
+                   "NRC 0x%02X received as expected for tampered token", receivedNRC);
+    }
+    else
+    {
+      testStepFail("Result 4",
+                   "Unexpected NRC for tampered token. Expected 0x35 or 0x22, got 0x%02X",
+                   receivedNRC);
+    }
+  }
+  else
+  {
+    testStepFail("Result 4",
+                 "SendRoutineControl RID 0xC004 (modified token) failed, rc=%d", respLen);
+  }
+
+  /*======================================================
+    STEP 5
+    Re-enter Extended Session, lock SFD via RID 0xC005,
+    then confirm SFD state via DID 0x0174
+    Expected: RID 0xC005 positive response (71 01 C0 05 ...)
+              DID 0x0174 positive response
+  ======================================================*/
+  testWaitForTimeout(200);
+
+  testStep("Step 5", "Re-enter Extended Session and lock SFD via RID 0xC005");
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 5", "Failed to enter Default Session before re-entering Extended Session");
+    return;
+  }
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 5", "Failed to re-enter Extended Diagnostic Session 0x03 for lock step");
+    return;
+  }
+  else
+  {
+    testStepPass("Result 5", "Re-entered Extended Diagnostic Session 0x03");
+  }
+
+  respLen = SendRoutineControl(
+      req2,
+      resp2,
+      0x01,
+      0xC005,
+      routineData,
+      0,
+      response,
+      elcount(response));
+
+  if (respLen > 0)
+  {
+    if ((response[2] == 0xC0) && (response[3] == 0x05))
+    {
+      testStepPass("Result 5",
+                   "Positive response received for RID 0xC005 (71 01 C0 05), SFD locked (len=%d)",
+                   respLen);
+    }
+    else
+    {
+      testStepFail("Result 5",
+                   "RID 0xC005 response RID echo mismatch: response[2]=0x%02X response[3]=0x%02X",
+                   response[2], response[3]);
+    }
+  }
+  else if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    testStepFail("Result 5",
+                 "Negative response for RID 0xC005, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 5",
+                 "SendRoutineControl RID 0xC005 failed, rc=%d", respLen);
+  }
+
+  testStep("Step 5b", "Read DID 0x0174 to confirm SFD unlock state after C005 lock");
+
+  len = UdsReadDid(0x0174, didReq, didResp, readBuf, elcount(readBuf), 5000);
+
+  if (len > 0)
+  {
+    testStepPass("Result 5b",
+                 "Positive response received for DID 0x0174 - SFD state confirmed (len=%d)", len);
+  }
+  else if (len <= -256)
+  {
+    receivedNRC = (-len) - 256;
+    testStepFail("Result 5b",
+                 "Negative response for DID 0x0174, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 5b",
+                 "UdsReadDid DID 0x0174 failed, rc=%d", len);
+  }
+
+  /*==========================================================
+    POST-CONDITIONS
+  ==========================================================*/
+  testStep("Postcondition", "none");
+
+  write("=== TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD END ===");
+}
+
+void MainTest()
+{
+  TC_HCP5_DIAG_11_006_RID_Unlocking_Individual_ECU_$C004_PD();
+}
