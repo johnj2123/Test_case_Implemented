@@ -29,18 +29,17 @@ includes
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
 {
-  diagRequest  HCP5_Diag_PD.SFD_Lock didReq;
-  diagResponse HCP5_Diag_PD.SFD_Lock didResp;
+  const dword TIMEOUT_MS = 5000;
 
-  byte readBuf[4095];
-  byte reqRaw[3];
+  byte reqPayload[2];   /* DID bytes: 0x3C, 0x0E */
+  byte respBuf[4095];   /* raw wire response: [0]=0x62 [1]=0x3C [2]=0x0E [3]=data */
   long rc;
-  long len;
   long receivedNRC;
-  long nrc;
-  int i;
 
   write("=== TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD START ===");
+
+  reqPayload[0] = 0x3C;
+  reqPayload[1] = 0x0E;
 
   /*==========================================================
     PRECONDITIONS
@@ -54,7 +53,7 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   StartRestBusSimulation();
   testStepPass("Precondition", "Restbus simulation running");
 
-  testWaitForTimeout(20000);  /* Wait for ECU boot after Klemme15 */
+  testWaitForTimeout(20000);
 
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN");
@@ -83,40 +82,23 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   ======================================================*/
   testStep("Step 1", "Send the 0x3C0E reading request in Default Session");
 
-  reqRaw[0] = 0x22; reqRaw[1] = 0x3C; reqRaw[2] = 0x0E;
-  diagResize(didReq, 3);
-  diagSetPrimitiveData(didReq, reqRaw, 3);
-  diagSendRequest(didReq);
-  testWaitForDiagResponse(didReq, 5000);
-  nrc = diagGetLastResponseCode(didReq);
+  rc = Send_Generic_Diag_mutliRequest_PD(0x22, reqPayload, 2, TIMEOUT_MS, respBuf, elcount(respBuf));
 
-  if (nrc >= 0)
+  if (rc > 0)
   {
-    /* Positive response — nrc holds the positive response SID (0x62) */
-    /* Read raw bytes directly from the response object */
-    diagGetLastResponse(didReq, didResp);
-    len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf));
-
-    /* Dump all bytes to Write window for debug */
-    write("STEP1 len=%d", len);
-    for (i = 0; i < len && i < 16; i++)
-      write("STEP1 buf[%d]=0x%02X", i, readBuf[i]);
-
-    testStepPass("Result 1", "Positive response received for DID 0x3C0E (len=%d)", len);
-    testStepPass("Result 1 raw", "buf[0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
-    /* Value check: after debug run, set correct index */
-    /* Expected raw wire: 62 3C 0E 03 — check all indexes in Write window */
-    if (readBuf[0] == 0x03 || readBuf[1] == 0x03 || readBuf[2] == 0x03 || readBuf[3] == 0x03)
-      testStepPass("Result 1 check", "Data=0x03 found in response buffer");
+    testStepPass("Result 1", "Positive response received for DID 0x3C0E (len=%d)", rc);
+    /* respBuf[0]=0x62, [1]=0x3C, [2]=0x0E, [3]=protection method value */
+    if (respBuf[3] == 0x03)
+      testStepPass("Result 1 check", "Data=0x03 as expected (62 3C 0E 03)");
     else
-      testStepFail("Result 1 check", "Data=0x03 NOT found in any of buf[0..3]: 0x%02X 0x%02X 0x%02X 0x%02X",
-        readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+      testStepFail("Result 1 check", "Unexpected Data=0x%02X (expected 0x03)", respBuf[3]);
   }
-  else
+  else if (rc <= -256)
   {
-    testStepFail("Result 1", "NRC=0x%02X received (expected positive response)", (-nrc));
+    receivedNRC = (-rc) - 256;
+    testStepFail("Result 1", "NRC=0x%02X received (expected positive response)", receivedNRC);
   }
+  else { testStepFail("Result 1", "Read failed, rc=%d", rc); }
 
   testWaitForTimeout(500);
 
@@ -127,35 +109,22 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   ======================================================*/
   testStep("Step 2", "Send the 0x3C0E reading request in Default Session (confirm)");
 
-  reqRaw[0] = 0x22; reqRaw[1] = 0x3C; reqRaw[2] = 0x0E;
-  diagResize(didReq, 3);
-  diagSetPrimitiveData(didReq, reqRaw, 3);
-  diagSendRequest(didReq);
-  testWaitForDiagResponse(didReq, 5000);
-  nrc = diagGetLastResponseCode(didReq);
+  rc = Send_Generic_Diag_mutliRequest_PD(0x22, reqPayload, 2, TIMEOUT_MS, respBuf, elcount(respBuf));
 
-  if (nrc >= 0)
+  if (rc > 0)
   {
-    diagGetLastResponse(didReq, didResp);
-    len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf));
-
-    write("STEP2 len=%d", len);
-    for (i = 0; i < len && i < 16; i++)
-      write("STEP2 buf[%d]=0x%02X", i, readBuf[i]);
-
-    testStepPass("Result 2", "Positive response received for DID 0x3C0E (len=%d)", len);
-    testStepPass("Result 2 raw", "buf[0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
-    if (readBuf[0] == 0x03 || readBuf[1] == 0x03 || readBuf[2] == 0x03 || readBuf[3] == 0x03)
-      testStepPass("Result 2 check", "Data=0x03 found in response buffer");
+    testStepPass("Result 2", "Positive response received for DID 0x3C0E (len=%d)", rc);
+    if (respBuf[3] == 0x03)
+      testStepPass("Result 2 check", "Data=0x03 as expected (62 3C 0E 03)");
     else
-      testStepFail("Result 2 check", "Data=0x03 NOT found in any of buf[0..3]: 0x%02X 0x%02X 0x%02X 0x%02X",
-        readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+      testStepFail("Result 2 check", "Unexpected Data=0x%02X (expected 0x03)", respBuf[3]);
   }
-  else
+  else if (rc <= -256)
   {
-    testStepFail("Result 2", "NRC=0x%02X received (expected positive response)", (-nrc));
+    receivedNRC = (-rc) - 256;
+    testStepFail("Result 2", "NRC=0x%02X received (expected positive response)", receivedNRC);
   }
+  else { testStepFail("Result 2", "Read failed, rc=%d", rc); }
 
   testWaitForTimeout(500);
 
@@ -178,35 +147,22 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   ======================================================*/
   testStep("Step 4", "Send the 0x3C0E reading request in Extended Session");
 
-  reqRaw[0] = 0x22; reqRaw[1] = 0x3C; reqRaw[2] = 0x0E;
-  diagResize(didReq, 3);
-  diagSetPrimitiveData(didReq, reqRaw, 3);
-  diagSendRequest(didReq);
-  testWaitForDiagResponse(didReq, 5000);
-  nrc = diagGetLastResponseCode(didReq);
+  rc = Send_Generic_Diag_mutliRequest_PD(0x22, reqPayload, 2, TIMEOUT_MS, respBuf, elcount(respBuf));
 
-  if (nrc >= 0)
+  if (rc > 0)
   {
-    diagGetLastResponse(didReq, didResp);
-    len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf));
-
-    write("STEP4 len=%d", len);
-    for (i = 0; i < len && i < 16; i++)
-      write("STEP4 buf[%d]=0x%02X", i, readBuf[i]);
-
-    testStepPass("Result 4", "Positive response received for DID 0x3C0E in Extended (len=%d)", len);
-    testStepPass("Result 4 raw", "buf[0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
-    if (readBuf[0] == 0x03 || readBuf[1] == 0x03 || readBuf[2] == 0x03 || readBuf[3] == 0x03)
-      testStepPass("Result 4 check", "Data=0x03 found in response buffer");
+    testStepPass("Result 4", "Positive response received for DID 0x3C0E in Extended (len=%d)", rc);
+    if (respBuf[3] == 0x03)
+      testStepPass("Result 4 check", "Data=0x03 as expected (62 3C 0E 03)");
     else
-      testStepFail("Result 4 check", "Data=0x03 NOT found in any of buf[0..3]: 0x%02X 0x%02X 0x%02X 0x%02X",
-        readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+      testStepFail("Result 4 check", "Unexpected Data=0x%02X (expected 0x03)", respBuf[3]);
   }
-  else
+  else if (rc <= -256)
   {
-    testStepFail("Result 4", "NRC=0x%02X received (expected positive response)", (-nrc));
+    receivedNRC = (-rc) - 256;
+    testStepFail("Result 4", "NRC=0x%02X received (expected positive response)", receivedNRC);
   }
+  else { testStepFail("Result 4", "Read failed, rc=%d", rc); }
 
   testWaitForTimeout(500);
 
@@ -243,30 +199,24 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   /*======================================================
     STEP 7
     Read DID 0x3C0E in Programming Session
-    Expected: Negative response (NRC 0x31)
+    Expected: Negative response NRC 0x31
   ======================================================*/
   testStep("Step 7", "Send the 0x3C0E reading request in Programming Session");
 
-  reqRaw[0] = 0x22; reqRaw[1] = 0x3C; reqRaw[2] = 0x0E;
-  diagResize(didReq, 3);
-  diagSetPrimitiveData(didReq, reqRaw, 3);
-  diagSendRequest(didReq);
-  testWaitForDiagResponse(didReq, 5000);
-  nrc = diagGetLastResponseCode(didReq);
+  rc = Send_Generic_Diag_mutliRequest_PD(0x22, reqPayload, 2, TIMEOUT_MS, respBuf, elcount(respBuf));
 
-  if (nrc < 0)
+  if (rc <= -256)
   {
-    /* nrc < 0 means negative response, value is the NRC code negated */
-    receivedNRC = -nrc;
+    receivedNRC = (-rc) - 256;
     if (receivedNRC == 0x31)
       testStepPass("Result 7", "Negative response received with NRC 0x31 as expected");
     else
       testStepFail("Result 7", "Unexpected NRC=0x%02X (expected 0x31)", receivedNRC);
   }
+  else if (rc > 0)
+    testStepFail("Result 7", "Positive response received (len=%d) — NRC 0x31 expected", rc);
   else
-  {
-    testStepFail("Result 7", "Positive response received (SID=0x%02X) — NRC 0x31 expected", nrc);
-  }
+    testStepFail("Result 7", "Read failed, rc=%d", rc);
 
   /*==========================================================
     POST-CONDITIONS
@@ -274,6 +224,93 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   testWaitForTimeout(1000);
   testStepPass("Postcondition", "none");
   write("=== TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD END ===");
+}
+
+/*=============================================================================
+  Function : Send_Generic_Diag_mutliRequest_PD
+  Purpose  : PD-domain generic/raw UDS sender. Uses wildcard diagRequest
+             HCP5_Diag_PD.* so diagGetPrimitiveData returns true wire bytes.
+  Returns  : >0              : total response length (incl. SID+DID bytes)
+             -(0x100 + NRC)  : negative response
+             -1              : invalid length
+             -2              : timeout
+             -3              : buffer too small
+             -4              : resize/set failure
+             -5              : send failure
+             -6              : response retrieval failure
+=============================================================================*/
+long Send_Generic_Diag_mutliRequest_PD(
+  byte    sid,
+  byte    payload[],
+  word    payloadLen,
+  dword   timeoutMs,
+  byte    response[],
+  word    maxRespLen)
+{
+  diagRequest  HCP5_Diag_PD.* req;
+  diagResponse HCP5_Diag_PD.* resp;
+
+  byte  requestData[4095];
+  long  reqLen;
+  long  result;
+  long  responseCode;
+  long  actualRespLen;
+  long  copiedRespLen;
+  int   i;
+
+  reqLen = payloadLen + 1;
+
+  if ((reqLen <= 0) || (reqLen > elCount(requestData)))
+  {
+    write("DIAG_ERR_PD: Invalid request length: %d", reqLen);
+    return -1;
+  }
+
+  if (maxRespLen == 0)
+  {
+    write("DIAG_ERR_PD: Output buffer size is zero.");
+    return -3;
+  }
+
+  requestData[0] = sid;
+  for (i = 0; i < payloadLen; i++)
+    requestData[i + 1] = payload[i];
+
+  result = diagResize(req, reqLen);
+  if (result < 0) { write("DIAG_ERR_PD: diagResize failed, result=%d", result); return -4; }
+
+  result = diagSetPrimitiveData(req, requestData, reqLen);
+  if (result < 0) { write("DIAG_ERR_PD: diagSetPrimitiveData failed, result=%d", result); return -4; }
+
+  result = diagSendRequest(req);
+  if (result < 0) { write("DIAG_ERR_PD: diagSendRequest failed, result=%d", result); return -5; }
+
+  result = testWaitForDiagResponse(req, timeoutMs);
+  if (result == 0) { write("DIAG_ERR_PD: Timeout waiting for response."); return -2; }
+  if (result < 0)  { write("DIAG_ERR_PD: Error during response wait, result=%d", result); return -6; }
+
+  responseCode = diagGetLastResponseCode(req);
+  if (responseCode != -1)
+  {
+    write("DIAG_NEG_PD: SID=0x%02X NRC=0x%02X", sid, responseCode);
+    return -(0x100 + responseCode);
+  }
+
+  result = diagGetLastResponse(req, resp);
+  if (result < 0) { write("DIAG_ERR_PD: diagGetLastResponse failed, result=%d", result); return -6; }
+
+  actualRespLen = diagGetPrimitiveSize(resp);
+  if (actualRespLen <= 0) { write("DIAG_ERR_PD: Invalid response length=%d", actualRespLen); return -6; }
+
+  if (actualRespLen > maxRespLen) { write("DIAG_ERR_PD: Buffer too small, need=%d have=%d", actualRespLen, maxRespLen); return -3; }
+
+  copiedRespLen = diagGetPrimitiveData(resp, response, maxRespLen);
+  if (copiedRespLen < 0) { write("DIAG_ERR_PD: diagGetPrimitiveData failed, result=%d", copiedRespLen); return -6; }
+
+  write("DIAG_OK_PD: SID=0x%02X len=%d [0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X",
+    response[0], actualRespLen, response[0], response[1], response[2], response[3]);
+
+  return actualRespLen;
 }
 
 void MainTest()
