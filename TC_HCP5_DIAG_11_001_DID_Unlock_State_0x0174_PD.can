@@ -156,14 +156,14 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   if (len > 0)
   {
     testStepPass("Result 1",
-      "Positive response received: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x00 && readBuf[6] == 0x00)
+            "Positive response received: 62 01 74 %02X %02X %02X (len=%d)",
+      readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[3] == 0x00 && readBuf[5] == 0x00)
       testStepPass("Result 1 check", "Byte[0]=0x00 (locked) and Byte[3]=0x00 as expected");
     else
       testStepFail("Result 1 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x00 / 0x00)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[5]=0x%02X (expected 0x00 / 0x00)",
+        readBuf[3], readBuf[5]);
   }
   else if (len <= -256)
   {
@@ -229,14 +229,14 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   if (len > 0)
   {
     testStepPass("Result 3",
-      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x02 && readBuf[6] == 0xFF)
+      "Positive response: 62 01 74 %02X %02X %02X (len=%d)",
+      readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[3] == 0x02 && readBuf[5] == 0xFF)
       testStepPass("Result 3 check", "State=0x02 (Basic), persistent=0xFF as expected");
     else
       testStepFail("Result 3 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x02 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[5]=0x%02X (expected 0x02 / 0xFF)",
+        readBuf[3], readBuf[5]);
   }
   else if (len <= -256)
   {
@@ -330,14 +330,14 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   if (len > 0)
   {
     testStepPass("Result 6",
-      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x03 && readBuf[6] == 0xFF)
+      "Positive response: 62 01 74 %02X %02X %02X (len=%d)",
+      readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[3] == 0x03 && readBuf[5] == 0xFF)
       testStepPass("Result 6 check", "State=0x03 (Extended), persistent=0xFF as expected");
     else
       testStepFail("Result 6 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x03 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[5]=0x%02X (expected 0x03 / 0xFF)",
+        readBuf[3], readBuf[5]);
   }
   else if (len <= -256)
   {
@@ -431,14 +431,14 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   if (len > 0)
   {
     testStepPass("Result 9",
-      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x04 && readBuf[6] == 0xFF)
+      "Positive response: 62 01 74 %02X %02X %02X (len=%d)",
+      readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[3] == 0x04 && readBuf[5] == 0xFF)
       testStepPass("Result 9 check", "State=0x04 (Superuser), persistent=0xFF as expected");
     else
       testStepFail("Result 9 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x04 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[5]=0x%02X (expected 0x04 / 0xFF)",
+        readBuf[3], readBuf[5]);
   }
   else if (len <= -256)
   {
@@ -494,14 +494,14 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   if (len > 0)
   {
     testStepPass("Result 11",
-      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x04 && readBuf[6] == 0xFF)
+      "Positive response: 62 01 74 %02X %02X %02X (len=%d)",
+      readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[3] == 0x04 && readBuf[5] == 0xFF)
       testStepPass("Result 11 check", "State=0x04 (Superuser) persists in Extended Session as expected");
     else
       testStepFail("Result 11 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x04 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[5]=0x%02X (expected 0x04 / 0xFF)",
+        readBuf[3], readBuf[5]);
   }
   else if (len <= -256)
   {
@@ -605,14 +605,14 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   if (len > 0)
   {
     testStepPass("Result 15",
-      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x05 && readBuf[6] == 0xFF)
+      "Positive response: 62 01 74 %02X %02X %02X (len=%d)",
+      readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[3] == 0x05 && readBuf[5] == 0xFF)
       testStepPass("Result 15 check", "State=0x05 (Production), persistent=0xFF as expected");
     else
       testStepFail("Result 15 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x05 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[5]=0x%02X (expected 0x05 / 0xFF)",
+        readBuf[3], readBuf[5]);
   }
   else if (len <= -256)
   {
@@ -711,14 +711,14 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   if (len > 0)
   {
     testStepPass("Result 18",
-      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x06 && readBuf[6] == 0xFF)
+      "Positive response: 62 01 74 %02X %02X %02X (len=%d)",
+      readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[3] == 0x06 && readBuf[5] == 0xFF)
       testStepPass("Result 18 check", "State=0x06 (OTA), persistent=0xFF as expected");
     else
       testStepFail("Result 18 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x06 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[5]=0x%02X (expected 0x06 / 0xFF)",
+        readBuf[3], readBuf[5]);
   }
   else if (len <= -256)
   {
