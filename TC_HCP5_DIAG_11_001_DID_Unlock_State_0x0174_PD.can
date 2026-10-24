@@ -49,7 +49,7 @@ includes
         -> 62 01 74 05 XX XX FF
     16. Lock SFD
     17. Unlock SFD with OTA Role, persistent mode
-        (UnlockRoleType = 2 — OTA mapped to Production in backend)
+        (UnlockRoleType = 2  EOTA mapped to Production in backend)
     18. Read DID 0x0174 (OTA unlocked)
         -> 62 01 74 06 XX XX FF
 
@@ -130,10 +130,10 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   /*======================================================
     STEP 1
-    Read DID 0x0174 — SFD locked state
+    Read DID 0x0174  ESFD locked state
     Expected: 62 01 74 00 00 XX 00
   ======================================================*/
-  testStep("Step 1", "Read DID 0x0174 — ECU SFD locked");
+  testStep("Step 1", "Read DID 0x0174  EECU SFD locked");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
@@ -141,13 +141,13 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   {
     testStepPass("Result 1",
       "Positive response received: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
-    if (readBuf[0] == 0x00 && readBuf[3] == 0x00)
-      testStepPass("Result 1 check", "Byte[0]=0x00 (locked) and Byte[3]=0x00 as expected");
+      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
+    if (readBuf[3] == 0x00 && readBuf[6] == 0x00)
+      testStepPass("Result 1 check", "Byte[3]=0x00 (locked) and Byte[6]=0x00 as expected");
     else
       testStepFail("Result 1 check",
-        "Unexpected state byte: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x00 / 0x00)",
-        readBuf[0], readBuf[3]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x00 / 0x00)",
+        readBuf[3], readBuf[6]);
   }
   else if (len <= -256)
   {
@@ -193,10 +193,10 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   /*======================================================
     STEP 3
-    Read DID 0x0174 — Basic unlocked
+    Read DID 0x0174  EBasic unlocked
     Expected: 62 01 74 02 XX XX FF
   ======================================================*/
-  testStep("Step 3", "Read DID 0x0174 — BASIC Role unlocked");
+  testStep("Step 3", "Read DID 0x0174  EBASIC Role unlocked");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
@@ -204,13 +204,13 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   {
     testStepPass("Result 3",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
-    if (readBuf[0] == 0x02 && readBuf[3] == 0xFF)
+      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
+    if (readBuf[3] == 0x02 && readBuf[6] == 0xFF)
       testStepPass("Result 3 check", "State=0x02 (Basic), persistent=0xFF as expected");
     else
       testStepFail("Result 3 check",
-        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x02 / 0xFF)",
-        readBuf[0], readBuf[3]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x02 / 0xFF)",
+        readBuf[3], readBuf[6]);
   }
   else if (len <= -256)
   {
@@ -284,10 +284,10 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   /*======================================================
     STEP 6
-    Read DID 0x0174 — Extended unlocked
+    Read DID 0x0174  EExtended unlocked
     Expected: 62 01 74 03 XX XX FF
   ======================================================*/
-  testStep("Step 6", "Read DID 0x0174 — EXTENDED Role unlocked");
+  testStep("Step 6", "Read DID 0x0174  EEXTENDED Role unlocked");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
@@ -295,13 +295,13 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   {
     testStepPass("Result 6",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
-    if (readBuf[0] == 0x03 && readBuf[3] == 0xFF)
+      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
+    if (readBuf[3] == 0x03 && readBuf[6] == 0xFF)
       testStepPass("Result 6 check", "State=0x03 (Extended), persistent=0xFF as expected");
     else
       testStepFail("Result 6 check",
-        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x03 / 0xFF)",
-        readBuf[0], readBuf[3]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x03 / 0xFF)",
+        readBuf[3], readBuf[6]);
   }
   else if (len <= -256)
   {
@@ -375,10 +375,10 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   /*======================================================
     STEP 9
-    Read DID 0x0174 — Superuser unlocked (still in Extended)
+    Read DID 0x0174  ESuperuser unlocked (still in Extended)
     Expected: 62 01 74 04 XX XX FF
   ======================================================*/
-  testStep("Step 9", "Read DID 0x0174 — SUPERUSER Role unlocked (Extended Session)");
+  testStep("Step 9", "Read DID 0x0174  ESUPERUSER Role unlocked (Extended Session)");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
@@ -386,13 +386,13 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   {
     testStepPass("Result 9",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
-    if (readBuf[0] == 0x04 && readBuf[3] == 0xFF)
+      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
+    if (readBuf[3] == 0x04 && readBuf[6] == 0xFF)
       testStepPass("Result 9 check", "State=0x04 (Superuser), persistent=0xFF as expected");
     else
       testStepFail("Result 9 check",
-        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x04 / 0xFF)",
-        readBuf[0], readBuf[3]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x04 / 0xFF)",
+        readBuf[3], readBuf[6]);
   }
   else if (len <= -256)
   {
@@ -409,7 +409,7 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   /*======================================================
     STEP 10
     Enter Extended Diagnostics Session 0x03
-    (already in Extended after unlock — re-confirm)
+    (already in Extended after unlock  Ere-confirm)
   ======================================================*/
   testStep("Step 10", "Enter Extended Diagnostics Session 0x03");
 
@@ -428,10 +428,10 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   /*======================================================
     STEP 11
-    Read DID 0x0174 in Extended Session — still Superuser unlocked
+    Read DID 0x0174 in Extended Session  Estill Superuser unlocked
     Expected: 62 01 74 04 XX XX FF
   ======================================================*/
-  testStep("Step 11", "Read DID 0x0174 in Extended Session — SUPERUSER still active");
+  testStep("Step 11", "Read DID 0x0174 in Extended Session  ESUPERUSER still active");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
@@ -439,13 +439,13 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   {
     testStepPass("Result 11",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
-    if (readBuf[0] == 0x04 && readBuf[3] == 0xFF)
+      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
+    if (readBuf[3] == 0x04 && readBuf[6] == 0xFF)
       testStepPass("Result 11 check", "State=0x04 (Superuser) persists in Extended Session as expected");
     else
       testStepFail("Result 11 check",
-        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x04 / 0xFF)",
-        readBuf[0], readBuf[3]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x04 / 0xFF)",
+        readBuf[3], readBuf[6]);
   }
   else if (len <= -256)
   {
@@ -529,10 +529,10 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   /*======================================================
     STEP 15
-    Read DID 0x0174 — Production unlocked
+    Read DID 0x0174  EProduction unlocked
     Expected: 62 01 74 05 XX XX FF
   ======================================================*/
-  testStep("Step 15", "Read DID 0x0174 — PRODUCTION Role unlocked");
+  testStep("Step 15", "Read DID 0x0174  EPRODUCTION Role unlocked");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
@@ -540,13 +540,13 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   {
     testStepPass("Result 15",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
-    if (readBuf[0] == 0x05 && readBuf[3] == 0xFF)
+      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
+    if (readBuf[3] == 0x05 && readBuf[6] == 0xFF)
       testStepPass("Result 15 check", "State=0x05 (Production), persistent=0xFF as expected");
     else
       testStepFail("Result 15 check",
-        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x05 / 0xFF)",
-        readBuf[0], readBuf[3]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x05 / 0xFF)",
+        readBuf[3], readBuf[6]);
   }
   else if (len <= -256)
   {
@@ -596,7 +596,7 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
     for unmapped values. If a dedicated OTA role type value is defined
     in the project, replace the UnlockRoleType value below accordingly.
     Using UnlockRoleType = 2 (Production_Persistent) as closest
-    available persistent role — update if OTA gets its own type ID.
+    available persistent role  Eupdate if OTA gets its own type ID.
   ======================================================*/
   testStep("Step 17", "Unlock SFD with OTA Role, persistent mode");
 
@@ -609,7 +609,7 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   testWaitForTimeout(500);
 
-  @sysvar::SFDRequest::UnlockRoleType = 2;  /* Production_Persistent — update if OTA has dedicated type */
+  @sysvar::SFDRequest::UnlockRoleType = 2;  /* Production_Persistent  Eupdate if OTA has dedicated type */
   rc = UnlockSfdRole_PD();
   if (rc != 0)
   {
@@ -625,10 +625,10 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   /*======================================================
     STEP 18
-    Read DID 0x0174 — OTA unlocked
+    Read DID 0x0174  EOTA unlocked
     Expected: 62 01 74 06 XX XX FF
   ======================================================*/
-  testStep("Step 18", "Read DID 0x0174 — OTA Role unlocked");
+  testStep("Step 18", "Read DID 0x0174  EOTA Role unlocked");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
@@ -636,13 +636,13 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   {
     testStepPass("Result 18",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
-    if (readBuf[0] == 0x06 && readBuf[3] == 0xFF)
+      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
+    if (readBuf[3] == 0x06 && readBuf[6] == 0xFF)
       testStepPass("Result 18 check", "State=0x06 (OTA), persistent=0xFF as expected");
     else
       testStepFail("Result 18 check",
-        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x06 / 0xFF)",
-        readBuf[0], readBuf[3]);
+        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x06 / 0xFF)",
+        readBuf[3], readBuf[6]);
   }
   else if (len <= -256)
   {
