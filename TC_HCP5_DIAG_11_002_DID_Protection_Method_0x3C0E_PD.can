@@ -8,39 +8,36 @@ includes
   Test Case : TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD
   Source     : HCP5_SysTest
   Domain     : PD
-  Purpose    : The test checks that the content of the DID 0x3C0E Protection
-               Method is correctly implemented on PD, and that it can only be
-               read in Default and Extended Diagnostic Session (not in
-               Programming Session).
+  Purpose    : Checks that DID 0x3C0E (Protection Method) is readable in
+               Default and Extended sessions, and rejected in Programming session.
+
+  NOTE - Deviation from spec (see diff_between_spec_report.xlsx):
+    Spec order: Default read -> Programming (NRC) -> Extended read.
+    Passing report order: Default read -> Default read -> Extended read ->
+    Extended read -> Programming (NRC).
+    Script follows passing report order.
 
   Preconditions:
     1. Clamp 30 enabled
     2. Clamp 15 enabled
-    3. Restbus simulation running (all ECUs transmit KN and NMH messages)
+    3. Restbus simulation running
     4. Connect Diag Client to Diag-CAN
     5. ECU SFD locked
     6. Default Diagnostic Session 0x01
-
-  Test Steps / Expected Results:
-    1. Send the 0x3C0E reading request (0x22) in Default Session
-       -> Positive response received
-    2. Enter Programming Session 0x02
-       -> (session transition)
-    3. Send the 0x3C0E reading request (0x22) in Programming Session
-       -> Negative response received with NRC 0x31
-    4. Enter Extended Diagnostics Session 0x03
-       -> (session transition)
-    5. Send the 0x3C0E reading request (0x22) in Extended Session
-       -> Positive response received
 
   Post-Conditions: none
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
 {
+  diagRequest  HCP5_Diag_PD.SFD_Lock didReq;
+  diagResponse HCP5_Diag_PD.SFD_Lock didResp;
+
   byte readBuf[4095];
+  byte reqRaw[3];
   long rc;
   long len;
   long receivedNRC;
+  long nrc;
 
   write("=== TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD START ===");
 
@@ -48,183 +45,200 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
     PRECONDITIONS
   ==========================================================*/
   EnableClamp30();
+  testStepPass("Precondition", "Enable Clamp 30");
+
   EnableClamp15();
+  testStepPass("Precondition", "Enable Clamp 15");
+
   StartRestBusSimulation();
-  testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
+  testStepPass("Precondition", "Restbus simulation running");
 
   testWaitForTimeout(20000);  /* Wait for ECU boot after Klemme15 */
 
   ConnectDiagClientToDiagCAN();
-  testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
+  testStepPass("Precondition", "Diag client connected to Diag-CAN");
 
   testWaitForTimeout(500);
 
   rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to enter Extended Session for SFD lock");
-    return;
-  }
+  if (rc != 0) { testStepFail("Precondition", "Failed to enter Extended Session for SFD lock"); return; }
 
   rc = SFD_lock_PD();
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to lock SFD");
-    return;
-  }
-  else
-  {
-    testStepPass("Precondition", "ECU SFD locked");
-  }
+  if (rc != 0) { testStepFail("Precondition", "Failed to lock SFD, rc=%d", rc); return; }
+  testStepPass("Precondition", "ECU SFD locked");
 
   testWaitForTimeout(500);
 
   rc = SetDefaultDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to enter Default Diagnostic Session 0x01");
-    return;
-  }
-  else
-  {
-    testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
-  }
+  if (rc != 0) { testStepFail("Precondition", "Failed to enter Default Session"); return; }
+  testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
 
   testWaitForTimeout(500);
 
   /*======================================================
     STEP 1
-    Send the 0x3C0E reading request (0x22) in Default Session
-    Expected: Positive response received
+    Read DID 0x3C0E in Default Session
+    Expected: Positive response, Data = 0x03
   ======================================================*/
   testStep("Step 1", "Send the 0x3C0E reading request in Default Session");
 
-  len = ReadDid_PD(0x3C0E, readBuf, elcount(readBuf));
+  reqRaw[0] = 0x22; reqRaw[1] = 0x3C; reqRaw[2] = 0x0E;
+  diagResize(didReq, 3);
+  diagSetPrimitiveData(didReq, reqRaw, 3);
+  diagSendRequest(didReq);
+  testWaitForDiagResponse(didReq, 5000);
+  nrc = diagGetLastResponseCode(didReq);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(didReq, didResp); len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf)); }
 
   if (len > 0)
   {
     testStepPass("Result 1", "Positive response received for DID 0x3C0E (len=%d)", len);
+    if (readBuf[3] == 0x03)
+      testStepPass("Result 1 check", "Data=0x03 as expected");
+    else
+      testStepFail("Result 1 check", "Unexpected Data=0x%02X (expected 0x03)", readBuf[3]);
   }
-  else if (len <= -256)
-  {
-    receivedNRC = (-len) - 256;
-    testStepFail("Result 1", "Negative response received, NRC=0x%02X", receivedNRC);
-  }
-  else
-  {
-    testStepFail("Result 1", "Read DID 0x3C0E failed, rc=%d", len);
-  }
+  else if (len <= -256) { testStepFail("Result 1", "NRC=0x%02X", (-len)-256); }
+  else { testStepFail("Result 1", "Read failed, rc=%d", len); }
 
   testWaitForTimeout(500);
 
   /*======================================================
     STEP 2
-    Enter Programming Session 0x02
+    Read DID 0x3C0E again in Default Session (confirm consistent)
+    Expected: Positive response, Data = 0x03
   ======================================================*/
-  testStep("Step 2", "Enter Programming Session 0x02");
+  testStep("Step 2", "Send the 0x3C0E reading request in Default Session (confirm)");
 
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 2", "Failed to enter Extended Session before Programming Session");
-    return;
-  }
+  reqRaw[0] = 0x22; reqRaw[1] = 0x3C; reqRaw[2] = 0x0E;
+  diagResize(didReq, 3);
+  diagSetPrimitiveData(didReq, reqRaw, 3);
+  diagSendRequest(didReq);
+  testWaitForDiagResponse(didReq, 5000);
+  nrc = diagGetLastResponseCode(didReq);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(didReq, didResp); len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf)); }
 
-  rc = SetProgrammingDiagnosticSession_PD(3000);
-  if (rc != 0)
+  if (len > 0)
   {
-    testStepFail("Result 2", "Failed to enter Programming Session 0x02");
-    return;
+    testStepPass("Result 2", "Positive response received for DID 0x3C0E (len=%d)", len);
+    if (readBuf[3] == 0x03)
+      testStepPass("Result 2 check", "Data=0x03 as expected");
+    else
+      testStepFail("Result 2 check", "Unexpected Data=0x%02X (expected 0x03)", readBuf[3]);
   }
-  else
-  {
-    testStepPass("Result 2", "Entered Programming Session 0x02");
-  }
+  else if (len <= -256) { testStepFail("Result 2", "NRC=0x%02X", (-len)-256); }
+  else { testStepFail("Result 2", "Read failed, rc=%d", len); }
 
   testWaitForTimeout(500);
 
   /*======================================================
     STEP 3
-    Send the 0x3C0E reading request (0x22) in Programming Session
-    Expected: Negative response received with NRC 0x31
+    Enter Extended Diagnostic Session 0x03
   ======================================================*/
-  testStep("Step 3", "Send the 0x3C0E reading request in Programming Session");
+  testStep("Step 3", "Enter Extended Diagnostic Session 0x03");
 
-  len = ReadDid_PD(0x3C0E, readBuf, elcount(readBuf));
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 3", "Failed to enter Extended Session"); return; }
+  testStepPass("Result 3", "Extended Diagnostic Session 0x03 entered");
 
-  if (len <= -256)
-  {
-    receivedNRC = (-len) - 256;
-    if (receivedNRC == 0x31)
-    {
-      testStepPass("Result 3", "NRC 0x31 received as expected");
-    }
-    else
-    {
-      testStepFail("Result 3", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
-    }
-  }
-  else
-  {
-    testStepFail("Result 3", "Negative response with NRC 0x31 expected, got rc=%d", len);
-  }
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 4
-    Enter Extended Diagnostics Session 0x03
+    Read DID 0x3C0E in Extended Session
+    Expected: Positive response, Data = 0x03
   ======================================================*/
-  testStep("Step 4", "Enter Extended Diagnostics Session 0x03");
+  testStep("Step 4", "Send the 0x3C0E reading request in Extended Session");
 
-  rc = SetDefaultDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 4", "Failed to enter Default Session before Extended Session");
-    return;
-  }
+  reqRaw[0] = 0x22; reqRaw[1] = 0x3C; reqRaw[2] = 0x0E;
+  diagResize(didReq, 3);
+  diagSetPrimitiveData(didReq, reqRaw, 3);
+  diagSendRequest(didReq);
+  testWaitForDiagResponse(didReq, 5000);
+  nrc = diagGetLastResponseCode(didReq);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(didReq, didResp); len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf)); }
 
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
+  if (len > 0)
   {
-    testStepFail("Result 4", "Failed to enter Extended Diagnostic Session 0x03");
-    return;
+    testStepPass("Result 4", "Positive response received for DID 0x3C0E in Extended (len=%d)", len);
+    if (readBuf[3] == 0x03)
+      testStepPass("Result 4 check", "Data=0x03 as expected");
+    else
+      testStepFail("Result 4 check", "Unexpected Data=0x%02X (expected 0x03)", readBuf[3]);
   }
-  else
-  {
-    testStepPass("Result 4", "Entered Extended Diagnostic Session 0x03");
-  }
+  else if (len <= -256) { testStepFail("Result 4", "NRC=0x%02X", (-len)-256); }
+  else { testStepFail("Result 4", "Read failed, rc=%d", len); }
 
   testWaitForTimeout(500);
 
   /*======================================================
     STEP 5
-    Send the 0x3C0E reading request (0x22) in Extended Session
-    Expected: Positive response received
+    Enter Extended Session again (SetExtendedService as per passing report)
   ======================================================*/
-  testStep("Step 5", "Send the 0x3C0E reading request in Extended Session");
+  testStep("Step 5", "Re-enter Extended Diagnostic Session 0x03");
 
-  len = ReadDid_PD(0x3C0E, readBuf, elcount(readBuf));
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 5", "Failed to re-enter Extended Session"); return; }
+  testStepPass("Result 5", "Extended Diagnostic Session 0x03 confirmed");
 
-  if (len > 0)
-  {
-    testStepPass("Result 5", "Positive response received for DID 0x3C0E (len=%d)", len);
-  }
-  else if (len <= -256)
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 6
+    Enter Programming Session 0x02
+    (Default -> Extended -> Programming as required)
+  ======================================================*/
+  testStep("Step 6", "Enter Programming Session 0x02");
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 6", "Failed to enter Default Session"); return; }
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 6", "Failed to enter Extended Session"); return; }
+
+  rc = SetProgrammingDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 6", "Failed to enter Programming Session 0x02"); return; }
+  testStepPass("Result 6", "Programming Session 0x02 entered");
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 7
+    Read DID 0x3C0E in Programming Session
+    Expected: Negative response (NRC 0x31)
+  ======================================================*/
+  testStep("Step 7", "Send the 0x3C0E reading request in Programming Session");
+
+  reqRaw[0] = 0x22; reqRaw[1] = 0x3C; reqRaw[2] = 0x0E;
+  diagResize(didReq, 3);
+  diagSetPrimitiveData(didReq, reqRaw, 3);
+  diagSendRequest(didReq);
+  testWaitForDiagResponse(didReq, 5000);
+  nrc = diagGetLastResponseCode(didReq);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(didReq, didResp); len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf)); }
+
+  if (len <= -256)
   {
     receivedNRC = (-len) - 256;
-    testStepFail("Result 5", "Negative response received, NRC=0x%02X", receivedNRC);
+    if (receivedNRC == 0x31)
+      testStepPass("Result 7", "Negative response received with NRC 0x31 as expected");
+    else
+      testStepFail("Result 7", "Unexpected NRC=0x%02X (expected 0x31)", receivedNRC);
   }
+  else if (len > 0)
+    testStepFail("Result 7", "Positive response received — NRC 0x31 expected");
   else
-  {
-    testStepFail("Result 5", "Read DID 0x3C0E failed, rc=%d", len);
-  }
+    testStepFail("Result 7", "Read failed, rc=%d", len);
 
   /*==========================================================
     POST-CONDITIONS
   ==========================================================*/
   testWaitForTimeout(1000);
-
-  testStep("Postcondition", "none");
-
+  testStepPass("Postcondition", "none");
   write("=== TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD END ===");
 }
 
