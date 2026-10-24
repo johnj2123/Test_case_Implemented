@@ -67,6 +67,9 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   diagRequest  HCP5_Diag_PD.SFD_Lock lockReq;
   diagResponse HCP5_Diag_PD.SFD_Lock lockResp;
 
+  diagRequest  HCP5_Diag_PD.* req0174;
+  diagResponse HCP5_Diag_PD.* resp0174;
+
   byte readBuf[4095];
   byte lockData[1];
   byte lockResp_raw[4095];
@@ -135,19 +138,19 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   ======================================================*/
   testStep("Step 1", "Read DID 0x0174  EECU SFD locked");
 
-  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+  len = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
 
   if (len > 0)
   {
     testStepPass("Result 1",
       "Positive response received: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x00 && readBuf[6] == 0x00)
-      testStepPass("Result 1 check", "Byte[3]=0x00 (locked) and Byte[6]=0x00 as expected");
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], len);
+    if (readBuf[0] == 0x00 && readBuf[3] == 0x00)
+      testStepPass("Result 1 check", "Byte[0]=0x00 (locked) and Byte[3]=0x00 as expected");
     else
       testStepFail("Result 1 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x00 / 0x00)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x00 / 0x00)",
+        readBuf[0], readBuf[3]);
   }
   else if (len <= -256)
   {
@@ -198,19 +201,19 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   ======================================================*/
   testStep("Step 3", "Read DID 0x0174  EBASIC Role unlocked");
 
-  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+  len = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
 
   if (len > 0)
   {
     testStepPass("Result 3",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x02 && readBuf[6] == 0xFF)
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], len);
+    if (readBuf[0] == 0x02 && readBuf[3] == 0xFF)
       testStepPass("Result 3 check", "State=0x02 (Basic), persistent=0xFF as expected");
     else
       testStepFail("Result 3 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x02 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x02 / 0xFF)",
+        readBuf[0], readBuf[3]);
   }
   else if (len <= -256)
   {
@@ -289,19 +292,19 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   ======================================================*/
   testStep("Step 6", "Read DID 0x0174  EEXTENDED Role unlocked");
 
-  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+  len = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
 
   if (len > 0)
   {
     testStepPass("Result 6",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x03 && readBuf[6] == 0xFF)
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], len);
+    if (readBuf[0] == 0x03 && readBuf[3] == 0xFF)
       testStepPass("Result 6 check", "State=0x03 (Extended), persistent=0xFF as expected");
     else
       testStepFail("Result 6 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x03 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x03 / 0xFF)",
+        readBuf[0], readBuf[3]);
   }
   else if (len <= -256)
   {
@@ -380,19 +383,19 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   ======================================================*/
   testStep("Step 9", "Read DID 0x0174  ESUPERUSER Role unlocked (Extended Session)");
 
-  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+  len = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
 
   if (len > 0)
   {
     testStepPass("Result 9",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x04 && readBuf[6] == 0xFF)
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], len);
+    if (readBuf[0] == 0x04 && readBuf[3] == 0xFF)
       testStepPass("Result 9 check", "State=0x04 (Superuser), persistent=0xFF as expected");
     else
       testStepFail("Result 9 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x04 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x04 / 0xFF)",
+        readBuf[0], readBuf[3]);
   }
   else if (len <= -256)
   {
@@ -433,19 +436,19 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   ======================================================*/
   testStep("Step 11", "Read DID 0x0174 in Extended Session  ESUPERUSER still active");
 
-  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+  len = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
 
   if (len > 0)
   {
     testStepPass("Result 11",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x04 && readBuf[6] == 0xFF)
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], len);
+    if (readBuf[0] == 0x04 && readBuf[3] == 0xFF)
       testStepPass("Result 11 check", "State=0x04 (Superuser) persists in Extended Session as expected");
     else
       testStepFail("Result 11 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x04 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x04 / 0xFF)",
+        readBuf[0], readBuf[3]);
   }
   else if (len <= -256)
   {
@@ -534,19 +537,19 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   ======================================================*/
   testStep("Step 15", "Read DID 0x0174  EPRODUCTION Role unlocked");
 
-  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+  len = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
 
   if (len > 0)
   {
     testStepPass("Result 15",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x05 && readBuf[6] == 0xFF)
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], len);
+    if (readBuf[0] == 0x05 && readBuf[3] == 0xFF)
       testStepPass("Result 15 check", "State=0x05 (Production), persistent=0xFF as expected");
     else
       testStepFail("Result 15 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x05 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x05 / 0xFF)",
+        readBuf[0], readBuf[3]);
   }
   else if (len <= -256)
   {
@@ -630,19 +633,19 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   ======================================================*/
   testStep("Step 18", "Read DID 0x0174  EOTA Role unlocked");
 
-  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+  len = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
 
   if (len > 0)
   {
     testStepPass("Result 18",
       "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
-      readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
-    if (readBuf[3] == 0x06 && readBuf[6] == 0xFF)
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], len);
+    if (readBuf[0] == 0x06 && readBuf[3] == 0xFF)
       testStepPass("Result 18 check", "State=0x06 (OTA), persistent=0xFF as expected");
     else
       testStepFail("Result 18 check",
-        "Unexpected state: readBuf[3]=0x%02X readBuf[6]=0x%02X (expected 0x06 / 0xFF)",
-        readBuf[3], readBuf[6]);
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x06 / 0xFF)",
+        readBuf[0], readBuf[3]);
   }
   else if (len <= -256)
   {
