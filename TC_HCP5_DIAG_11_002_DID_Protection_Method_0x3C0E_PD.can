@@ -95,7 +95,19 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   if (len > 0)
   {
     testStepPass("Result 1", "Positive response received for DID 0x3C0E (len=%d)", len);
-    /* diagGetPrimitiveByte(resp, index) reads raw wire byte at offset */
+    testStepPass("Result 1 raw", "Response bytes: [0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
+
+    /* DEBUG: dump every byte from diagGetPrimitiveData buffer */
+    write("DEBUG1_readBuf len=%d", len);
+    int i;
+    for (i = 0; i < len && i < 16; i++)
+      write("DEBUG1_readBuf[%d] = 0x%02X", i, readBuf[i]);
+    write("DEBUG1_primByte[0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
+      diagGetPrimitiveByte(didResp,0), diagGetPrimitiveByte(didResp,1),
+      diagGetPrimitiveByte(didResp,2), diagGetPrimitiveByte(didResp,3),
+      diagGetPrimitiveByte(didResp,4), diagGetPrimitiveByte(didResp,5));
+
     dataByte = diagGetPrimitiveByte(didResp, 3);
     if (dataByte == 0x03)
       testStepPass("Result 1 check", "Data=0x03 as expected (62 3C 0E 03)");
@@ -126,6 +138,18 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   if (len > 0)
   {
     testStepPass("Result 2", "Positive response received for DID 0x3C0E (len=%d)", len);
+    testStepPass("Result 2 raw", "Response bytes: [0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
+
+    write("DEBUG2_readBuf len=%d", len);
+    int j;
+    for (j = 0; j < len && j < 16; j++)
+      write("DEBUG2_readBuf[%d] = 0x%02X", j, readBuf[j]);
+    write("DEBUG2_primByte[0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
+      diagGetPrimitiveByte(didResp,0), diagGetPrimitiveByte(didResp,1),
+      diagGetPrimitiveByte(didResp,2), diagGetPrimitiveByte(didResp,3),
+      diagGetPrimitiveByte(didResp,4), diagGetPrimitiveByte(didResp,5));
+
     dataByte = diagGetPrimitiveByte(didResp, 3);
     if (dataByte == 0x03)
       testStepPass("Result 2 check", "Data=0x03 as expected (62 3C 0E 03)");
@@ -168,6 +192,18 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   if (len > 0)
   {
     testStepPass("Result 4", "Positive response received for DID 0x3C0E in Extended (len=%d)", len);
+    testStepPass("Result 4 raw", "Response bytes: [0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
+
+    write("DEBUG4_readBuf len=%d", len);
+    int k;
+    for (k = 0; k < len && k < 16; k++)
+      write("DEBUG4_readBuf[%d] = 0x%02X", k, readBuf[k]);
+    write("DEBUG4_primByte[0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
+      diagGetPrimitiveByte(didResp,0), diagGetPrimitiveByte(didResp,1),
+      diagGetPrimitiveByte(didResp,2), diagGetPrimitiveByte(didResp,3),
+      diagGetPrimitiveByte(didResp,4), diagGetPrimitiveByte(didResp,5));
+
     dataByte = diagGetPrimitiveByte(didResp, 3);
     if (dataByte == 0x03)
       testStepPass("Result 4 check", "Data=0x03 as expected (62 3C 0E 03)");
