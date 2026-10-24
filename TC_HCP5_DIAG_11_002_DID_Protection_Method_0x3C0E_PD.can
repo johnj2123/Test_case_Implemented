@@ -29,8 +29,8 @@ includes
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
 {
-  diagRequest  HCP5_Diag_PD.SFD_Lock didReq;
-  diagResponse HCP5_Diag_PD.SFD_Lock didResp;
+  diagRequest  HCP5_Diag_PD.ReadDataByIdentifier032E didReq;
+  diagResponse HCP5_Diag_PD.ReadDataByIdentifier032E didResp;
 
   byte readBuf[4095];
   byte reqRaw[3];
