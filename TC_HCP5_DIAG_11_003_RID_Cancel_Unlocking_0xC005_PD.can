@@ -32,6 +32,8 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
 {
   diagRequest  HCP5_Diag_PD.SFD_Lock req;
   diagResponse HCP5_Diag_PD.SFD_Lock resp;
+  diagRequest  HCP5_Diag_PD.* wreq;
+  diagResponse HCP5_Diag_PD.* wresp;
 
   byte rawReq[4];
   byte readBuf[4095];
@@ -78,13 +80,13 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (rc != 0) { testStepFail("Precondition", "Failed to enter Extended Session"); return; }
 
   rawReq[0] = 0x22; rawReq[1] = 0x01; rawReq[2] = 0x74;
-  diagResize(req, 3);
-  diagSetPrimitiveData(req, rawReq, 3);
-  diagSendRequest(req);
-  testWaitForDiagResponse(req, 5000);
-  nrc = diagGetLastResponseCode(req);
+  diagResize(wreq, 3);
+  diagSetPrimitiveData(wreq, rawReq, 3);
+  diagSendRequest(wreq);
+  testWaitForDiagResponse(wreq, 5000);
+  nrc = diagGetLastResponseCode(wreq);
   if (nrc >= 0) { len = -(0x100 + nrc); }
-  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+  else { diagGetLastResponse(wreq, wresp); len = diagGetPrimitiveData(wresp, readBuf, elcount(readBuf)); }
 
   if (len > 0)
   {
@@ -256,13 +258,13 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   testStep("Step 9", "Read DID 0x0174 in Extended Session - confirm SFD locked");
 
   rawReq[0] = 0x22; rawReq[1] = 0x01; rawReq[2] = 0x74;
-  diagResize(req, 3);
-  diagSetPrimitiveData(req, rawReq, 3);
-  diagSendRequest(req);
-  testWaitForDiagResponse(req, 5000);
-  nrc = diagGetLastResponseCode(req);
+  diagResize(wreq, 3);
+  diagSetPrimitiveData(wreq, rawReq, 3);
+  diagSendRequest(wreq);
+  testWaitForDiagResponse(wreq, 5000);
+  nrc = diagGetLastResponseCode(wreq);
   if (nrc >= 0) { len = -(0x100 + nrc); }
-  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+  else { diagGetLastResponse(wreq, wresp); len = diagGetPrimitiveData(wresp, readBuf, elcount(readBuf)); }
 
   if (len > 0)
   {
@@ -312,13 +314,13 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (rc != 0) { testStepFail("Result 10", "Failed to enter Extended for 0174 check"); return; }
 
   rawReq[0] = 0x22; rawReq[1] = 0x01; rawReq[2] = 0x74;
-  diagResize(req, 3);
-  diagSetPrimitiveData(req, rawReq, 3);
-  diagSendRequest(req);
-  testWaitForDiagResponse(req, 5000);
-  nrc = diagGetLastResponseCode(req);
+  diagResize(wreq, 3);
+  diagSetPrimitiveData(wreq, rawReq, 3);
+  diagSendRequest(wreq);
+  testWaitForDiagResponse(wreq, 5000);
+  nrc = diagGetLastResponseCode(wreq);
   if (nrc >= 0) { len = -(0x100 + nrc); }
-  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+  else { diagGetLastResponse(wreq, wresp); len = diagGetPrimitiveData(wresp, readBuf, elcount(readBuf)); }
 
   if (len > 0)
   {
@@ -342,13 +344,13 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   testStep("Step 11", "Read DID 0x0174 - confirm unlocked state (Role=0x04, Duration=0xFF)");
 
   rawReq[0] = 0x22; rawReq[1] = 0x01; rawReq[2] = 0x74;
-  diagResize(req, 3);
-  diagSetPrimitiveData(req, rawReq, 3);
-  diagSendRequest(req);
-  testWaitForDiagResponse(req, 5000);
-  nrc = diagGetLastResponseCode(req);
+  diagResize(wreq, 3);
+  diagSetPrimitiveData(wreq, rawReq, 3);
+  diagSendRequest(wreq);
+  testWaitForDiagResponse(wreq, 5000);
+  nrc = diagGetLastResponseCode(wreq);
   if (nrc >= 0) { len = -(0x100 + nrc); }
-  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+  else { diagGetLastResponse(wreq, wresp); len = diagGetPrimitiveData(wresp, readBuf, elcount(readBuf)); }
 
   if (len > 0)
   {
@@ -410,13 +412,13 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   testStep("Step 13", "Read DID 0x0174 - confirm SFD locked after C005");
 
   rawReq[0] = 0x22; rawReq[1] = 0x01; rawReq[2] = 0x74;
-  diagResize(req, 3);
-  diagSetPrimitiveData(req, rawReq, 3);
-  diagSendRequest(req);
-  testWaitForDiagResponse(req, 5000);
-  nrc = diagGetLastResponseCode(req);
+  diagResize(wreq, 3);
+  diagSetPrimitiveData(wreq, rawReq, 3);
+  diagSendRequest(wreq);
+  testWaitForDiagResponse(wreq, 5000);
+  nrc = diagGetLastResponseCode(wreq);
   if (nrc >= 0) { len = -(0x100 + nrc); }
-  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+  else { diagGetLastResponse(wreq, wresp); len = diagGetPrimitiveData(wresp, readBuf, elcount(readBuf)); }
 
   if (len > 0)
   {
