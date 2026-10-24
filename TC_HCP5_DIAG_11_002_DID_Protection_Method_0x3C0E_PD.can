@@ -29,13 +29,15 @@ includes
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
 {
-  diagRequest  HCP5_Diag_PD.SFD_Lock didReq;
+    diagRequest  HCP5_Diag_PD.SFD_Lock didReq;
   diagResponse HCP5_Diag_PD.SFD_Lock didResp;
 
   byte readBuf[4095];
+  byte rawResp[4095];   /* true wire bytes from diagGetRespBuffer */
   byte reqRaw[3];
   long rc;
   long len;
+  long rawLen;
   long receivedNRC;
   long nrc;
 
@@ -91,15 +93,17 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   if (nrc >= 0) { len = -(0x100 + nrc); }
   else { diagGetLastResponse(didReq, didResp); len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf)); }
 
-    if (len > 0)
+  if (len > 0)
   {
     testStepPass("Result 1", "Positive response received for DID 0x3C0E (len=%d)", len);
-    if (len >= 4 && readBuf[3] == 0x03)
+    rawLen = diagGetRespBuffer(didReq, rawResp, elcount(rawResp));
+    /* raw wire frame: 62 3C 0E XX  ->  rawResp[3] is the payload byte */
+    if (rawLen >= 4 && rawResp[3] == 0x03)
       testStepPass("Result 1 check", "Data=0x03 as expected (62 3C 0E 03)");
-    else if (len >= 4)
-      testStepFail("Result 1 check", "Unexpected Data=0x%02X (expected 0x03)", readBuf[3]);
+    else if (rawLen >= 4)
+      testStepFail("Result 1 check", "Unexpected Data=0x%02X (expected 0x03)", rawResp[3]);
     else
-      testStepFail("Result 1 check", "Response too short to extract Data byte (len=%d)", len);
+      testStepFail("Result 1 check", "Raw response too short (rawLen=%d)", rawLen);
   }
   else if (len <= -256) { testStepFail("Result 1", "NRC=0x%02X", (-len)-256); }
   else { testStepFail("Result 1", "Read failed, rc=%d", len); }
@@ -122,15 +126,16 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   if (nrc >= 0) { len = -(0x100 + nrc); }
   else { diagGetLastResponse(didReq, didResp); len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf)); }
 
-    if (len > 0)
+  if (len > 0)
   {
     testStepPass("Result 2", "Positive response received for DID 0x3C0E (len=%d)", len);
-    if (len >= 4 && readBuf[3] == 0x03)
+    rawLen = diagGetRespBuffer(didReq, rawResp, elcount(rawResp));
+    if (rawLen >= 4 && rawResp[3] == 0x03)
       testStepPass("Result 2 check", "Data=0x03 as expected (62 3C 0E 03)");
-    else if (len >= 4)
-      testStepFail("Result 2 check", "Unexpected Data=0x%02X (expected 0x03)", readBuf[3]);
+    else if (rawLen >= 4)
+      testStepFail("Result 2 check", "Unexpected Data=0x%02X (expected 0x03)", rawResp[3]);
     else
-      testStepFail("Result 2 check", "Response too short to extract Data byte (len=%d)", len);
+      testStepFail("Result 2 check", "Raw response too short (rawLen=%d)", rawLen);
   }
   else if (len <= -256) { testStepFail("Result 2", "NRC=0x%02X", (-len)-256); }
   else { testStepFail("Result 2", "Read failed, rc=%d", len); }
@@ -165,15 +170,16 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   if (nrc >= 0) { len = -(0x100 + nrc); }
   else { diagGetLastResponse(didReq, didResp); len = diagGetPrimitiveData(didResp, readBuf, elcount(readBuf)); }
 
-    if (len > 0)
+  if (len > 0)
   {
     testStepPass("Result 4", "Positive response received for DID 0x3C0E in Extended (len=%d)", len);
-    if (len >= 4 && readBuf[3] == 0x03)
+    rawLen = diagGetRespBuffer(didReq, rawResp, elcount(rawResp));
+    if (rawLen >= 4 && rawResp[3] == 0x03)
       testStepPass("Result 4 check", "Data=0x03 as expected (62 3C 0E 03)");
-    else if (len >= 4)
-      testStepFail("Result 4 check", "Unexpected Data=0x%02X (expected 0x03)", readBuf[3]);
+    else if (rawLen >= 4)
+      testStepFail("Result 4 check", "Unexpected Data=0x%02X (expected 0x03)", rawResp[3]);
     else
-      testStepFail("Result 4 check", "Response too short to extract Data byte (len=%d)", len);
+      testStepFail("Result 4 check", "Raw response too short (rawLen=%d)", rawLen);
   }
   else if (len <= -256) { testStepFail("Result 4", "NRC=0x%02X", (-len)-256); }
   else { testStepFail("Result 4", "Read failed, rc=%d", len); }
