@@ -39,6 +39,7 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
   long len;
   long receivedNRC;
   long nrc;
+  int i;
 
   write("=== TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD START ===");
 
@@ -100,7 +101,6 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
 
     /* DEBUG: dump every byte from diagGetPrimitiveData buffer */
     write("DEBUG1_readBuf len=%d", len);
-    int i;
     for (i = 0; i < len && i < 16; i++)
       write("DEBUG1_readBuf[%d] = 0x%02X", i, readBuf[i]);
     write("DEBUG1_primByte[0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
@@ -142,9 +142,8 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
       readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
 
     write("DEBUG2_readBuf len=%d", len);
-    int j;
-    for (j = 0; j < len && j < 16; j++)
-      write("DEBUG2_readBuf[%d] = 0x%02X", j, readBuf[j]);
+    for (i = 0; i < len && i < 16; i++)
+      write("DEBUG2_readBuf[%d] = 0x%02X", i, readBuf[i]);
     write("DEBUG2_primByte[0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
       diagGetPrimitiveByte(didResp,0), diagGetPrimitiveByte(didResp,1),
       diagGetPrimitiveByte(didResp,2), diagGetPrimitiveByte(didResp,3),
@@ -196,9 +195,8 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
       readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
 
     write("DEBUG4_readBuf len=%d", len);
-    int k;
-    for (k = 0; k < len && k < 16; k++)
-      write("DEBUG4_readBuf[%d] = 0x%02X", k, readBuf[k]);
+    for (i = 0; i < len && i < 16; i++)
+      write("DEBUG4_readBuf[%d] = 0x%02X", i, readBuf[i]);
     write("DEBUG4_primByte[0]=0x%02X [1]=0x%02X [2]=0x%02X [3]=0x%02X [4]=0x%02X [5]=0x%02X",
       diagGetPrimitiveByte(didResp,0), diagGetPrimitiveByte(didResp,1),
       diagGetPrimitiveByte(didResp,2), diagGetPrimitiveByte(didResp,3),
