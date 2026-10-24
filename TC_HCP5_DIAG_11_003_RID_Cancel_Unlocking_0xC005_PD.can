@@ -10,9 +10,10 @@ includes
   Domain     : PD
   Purpose    : The test checks that RID 0xC005 (Cancel Unlocking / SFD Lock)
                is correctly implemented on PD. The routine must be rejected
-               with NRC 0x31 in Default Session, and must return a positive
-               response in Extended Diagnostic Session. After execution the
-               SFD locked state is confirmed via DID 0x0174.
+               with NRC 0x31 in Default Session and in Programming Session,
+               and must return a positive response in Extended Diagnostic
+               Session. After execution the SFD locked state is confirmed
+               via DID 0x0174.
 
   Preconditions:
     1. Clamp 30 enabled
@@ -24,11 +25,15 @@ includes
   Test Steps / Expected Results:
     1. Send RID 0xC005 StartRoutine (0x31 0x01) in Default Session
        -> Negative response received with NRC 0x31
-    2. Enter Extended Diagnostics Session 0x03
+    2. Enter Programming Session 0x02
        -> (session transition)
-    3. Send RID 0xC005 StartRoutine (0x31 0x01) in Extended Session
+    3. Send RID 0xC005 StartRoutine (0x31 0x01) in Programming Session
+       -> Negative response received with NRC 0x31
+    4. Enter Extended Diagnostics Session 0x03
+       -> (session transition)
+    5. Send RID 0xC005 StartRoutine (0x31 0x01) in Extended Session
        -> Positive response received (71 01 C0 05 ...)
-    4. Read DID 0x0174 in Extended Session
+    6. Read DID 0x0174 in Extended Session
        -> Positive response received (SFD locked state confirmed)
 
   Post-Conditions: none
@@ -55,6 +60,8 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   EnableClamp15();
   StartRestBusSimulation();
   testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
+
+  testWaitForTimeout(20000);  /* Wait for ECU boot after Klemme15 */
 
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
@@ -104,29 +111,95 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
 
   /*======================================================
     STEP 2
-    Enter Extended Diagnostics Session 0x03
+    Enter Programming Session 0x02
+    (must go via Extended first)
   ======================================================*/
-  testStep("Step 2", "Enter Extended Diagnostics Session 0x03");
+  testStep("Step 2", "Enter Programming Session 0x02 via Extended");
 
   rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0)
   {
-    testStepFail("Result 2", "Failed to enter Extended Diagnostic Session 0x03");
+    testStepFail("Result 2", "Failed to enter Extended Session before Programming Session");
+    return;
+  }
+
+  testWaitForTimeout(500);
+
+  rc = SetProgrammingDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 2", "Failed to enter Programming Session 0x02");
     return;
   }
   else
   {
-    testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
+    testStepPass("Result 2", "Entered Programming Session 0x02");
   }
 
   testWaitForTimeout(500);
 
   /*======================================================
     STEP 3
+    Send RID 0xC005 StartRoutine in Programming Session
+    Expected: Negative response NRC 0x31
+  ======================================================*/
+  testStep("Step 3", "Send RID 0xC005 StartRoutine in Programming Session");
+
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC005, routineData, 0, response, elcount(response));
+
+  if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    if (receivedNRC == 0x31)
+    {
+      testStepPass("Result 3", "NRC 0x31 received as expected in Programming Session");
+    }
+    else
+    {
+      testStepFail("Result 3", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
+    }
+  }
+  else
+  {
+    testStepFail("Result 3", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 4
+    Return to Default then enter Extended Session 0x03
+  ======================================================*/
+  testStep("Step 4", "Enter Extended Diagnostics Session 0x03");
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 4", "Failed to return to Default Session");
+    return;
+  }
+
+  testWaitForTimeout(500);
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 4", "Failed to enter Extended Diagnostic Session 0x03");
+    return;
+  }
+  else
+  {
+    testStepPass("Result 4", "Entered Extended Diagnostic Session 0x03");
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 5
     Send RID 0xC005 StartRoutine in Extended Session
     Expected: Positive response (71 01 C0 05 ...)
   ======================================================*/
-  testStep("Step 3", "Send RID 0xC005 StartRoutine in Extended Session");
+  testStep("Step 5", "Send RID 0xC005 StartRoutine in Extended Session");
 
   respLen = SendRoutineControl(req, resp, 0x01, 0xC005, routineData, 0, response, elcount(response));
 
@@ -134,46 +207,46 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   {
     if (response[2] == 0xC0 && response[3] == 0x05)
     {
-      testStepPass("Result 3", "Positive response received for RID 0xC005 (71 01 C0 05), len=%d", respLen);
+      testStepPass("Result 5", "Positive response received for RID 0xC005 (71 01 C0 05), len=%d", respLen);
     }
     else
     {
-      testStepFail("Result 3", "Response received but RID echo mismatch: response[2]=0x%02X response[3]=0x%02X", response[2], response[3]);
+      testStepFail("Result 5", "Response received but RID echo mismatch: response[2]=0x%02X response[3]=0x%02X", response[2], response[3]);
     }
   }
   else if (respLen <= -256)
   {
     receivedNRC = (-respLen) - 256;
-    testStepFail("Result 3", "Negative response received, NRC=0x%02X", receivedNRC);
+    testStepFail("Result 5", "Negative response received, NRC=0x%02X", receivedNRC);
   }
   else
   {
-    testStepFail("Result 3", "SendRoutineControl RID 0xC005 failed, rc=%d", respLen);
+    testStepFail("Result 5", "SendRoutineControl RID 0xC005 failed, rc=%d", respLen);
   }
 
   testWaitForTimeout(500);
 
   /*======================================================
-    STEP 4
+    STEP 6
     Read DID 0x0174 in Extended Session
     Expected: Positive response (SFD locked state confirmed)
   ======================================================*/
-  testStep("Step 4", "Read DID 0x0174 to confirm SFD locked state");
+  testStep("Step 6", "Read DID 0x0174 to confirm SFD locked state");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
   if (len > 0)
   {
-    testStepPass("Result 4", "Positive response received for DID 0x0174 - SFD locked state confirmed (len=%d)", len);
+    testStepPass("Result 6", "Positive response for DID 0x0174 - SFD locked state confirmed (len=%d)", len);
   }
   else if (len <= -256)
   {
     receivedNRC = (-len) - 256;
-    testStepFail("Result 4", "Negative response received for DID 0x0174, NRC=0x%02X", receivedNRC);
+    testStepFail("Result 6", "Negative response for DID 0x0174, NRC=0x%02X", receivedNRC);
   }
   else
   {
-    testStepFail("Result 4", "Read DID 0x0174 failed, rc=%d", len);
+    testStepFail("Result 6", "Read DID 0x0174 failed, rc=%d", len);
   }
 
   /*==========================================================

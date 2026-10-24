@@ -6,12 +6,12 @@ includes
 
 /*=============================================================================
   Test Case : TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD
-  Source     : HCP5_SysTest
+  Source     : HCP5_SysTest (HCP5_SysTest18414)
   Domain     : PD
-  Purpose    : The test checks that the content of the DID 0x0174 Unlock State
-               is correctly implemented on PD, and that it can only be read in
-               Default and Extended Diagnostic Session (not in Programming
-               Session).
+  Purpose    : Checks that DID 0x0174 (Unlock_status_of_ECU_of_protection_of_
+               vehicle_diagnosis) correctly reflects the current SFD unlock
+               state for each role. DID must be readable in Default (0x01)
+               and Extended (0x03) sessions.
 
   Preconditions:
     1. Clamp 30 enabled
@@ -22,24 +22,57 @@ includes
     6. Default Diagnostic Session 0x01
 
   Test Steps / Expected Results:
-    1. Send the 0x0174 reading request (0x22) in Default Session
-       -> Positive response received
-    2. Enter Programming Session 0x02
-       -> (session transition)
-    3. Send the 0x0174 reading request (0x22) in Programming Session
-       -> Negative response received with NRC 0x31
-    4. Enter Extended Diagnostics Session 0x03
-       -> (session transition)
-    5. Send the 0x0174 reading request (0x22) in Extended Session
-       -> Positive response received
+    1.  Read DID 0x0174 (SFD locked)
+        -> 62 01 74 00 00 XX 00
+    2.  Unlock SFD with BASIC Role, persistent mode
+        (UnlockRoleType = 4)
+    3.  Read DID 0x0174 (Basic unlocked)
+        -> 62 01 74 02 XX XX FF
+    4.  Lock SFD (RID 0xC005 in Extended Session)
+    5.  Unlock SFD with EXTENDED Role, persistent mode
+        (UnlockRoleType = 3)
+    6.  Read DID 0x0174 (Extended unlocked)
+        -> 62 01 74 03 XX XX FF
+    7.  Lock SFD
+    8.  Unlock SFD with SUPERUSER Role, persistent mode
+        (UnlockRoleType = 1)
+    9.  Read DID 0x0174 (Superuser unlocked)
+        -> 62 01 74 04 XX XX FF
+    10. Enter Extended Diagnostics Session 0x03
+    11. Read DID 0x0174 (still Superuser unlocked, Extended session)
+        -> 62 01 74 04 XX XX FF
+    12. Lock SFD
+    13. Enter Default Diagnostic Session 0x01
+    14. Unlock SFD with PRODUCTION Role, persistent mode
+        (UnlockRoleType = 2)
+    15. Read DID 0x0174 (Production unlocked)
+        -> 62 01 74 05 XX XX FF
+    16. Lock SFD
+    17. Unlock SFD with OTA Role, persistent mode
+        (UnlockRoleType = 2 — OTA mapped to Production in backend)
+    18. Read DID 0x0174 (OTA unlocked)
+        -> 62 01 74 06 XX XX FF
 
-  Post-Conditions: none
+  Post-Conditions:
+    ECU unlocked
+
+  Role -> UnlockRoleType sysvar mapping (LocalScriptRunner.can):
+    1 = Superuser_Persistent
+    2 = Production_Persistent
+    3 = Extended_Persistent
+    4 = Basic_Persistent
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 {
+  diagRequest  HCP5_Diag_PD.SFD_Lock lockReq;
+  diagResponse HCP5_Diag_PD.SFD_Lock lockResp;
+
   byte readBuf[4095];
+  byte lockData[1];
+  byte lockResp_raw[4095];
   long rc;
   long len;
+  long lockLen;
   long receivedNRC;
 
   write("=== TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD START ===");
@@ -50,19 +83,24 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
   EnableClamp30();
   EnableClamp15();
   StartRestBusSimulation();
-  testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
+  testStepPass("Precondition", "Restbus simulation running");
+
+  testWaitForTimeout(20000);  /* Wait for ECU boot after Klemme15 */
 
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
 
   testWaitForTimeout(500);
 
+  /* Lock SFD to establish known starting state */
   rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0)
   {
-    testStepFail("Precondition", "Failed to enter Extended Session for SFD lock");
+    testStepFail("Precondition", "Failed to enter Extended Session for initial SFD lock");
     return;
   }
+
+  testWaitForTimeout(500);
 
   rc = SFD_lock_PD();
   if (rc != 0)
@@ -92,21 +130,29 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   /*======================================================
     STEP 1
-    Send the 0x0174 reading request (0x22) in Default Session
-    Expected: Positive response received
+    Read DID 0x0174 — SFD locked state
+    Expected: 62 01 74 00 00 XX 00
   ======================================================*/
-  testStep("Step 1", "Send the 0x0174 reading request in Default Session");
+  testStep("Step 1", "Read DID 0x0174 — ECU SFD locked");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
   if (len > 0)
   {
-    testStepPass("Result 1", "Positive response received for DID 0x0174 (len=%d)", len);
+    testStepPass("Result 1",
+      "Positive response received: 62 01 74 %02X %02X %02X %02X (len=%d)",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[0] == 0x00 && readBuf[3] == 0x00)
+      testStepPass("Result 1 check", "Byte[0]=0x00 (locked) and Byte[3]=0x00 as expected");
+    else
+      testStepFail("Result 1 check",
+        "Unexpected state byte: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x00 / 0x00)",
+        readBuf[0], readBuf[3]);
   }
   else if (len <= -256)
   {
     receivedNRC = (-len) - 256;
-    testStepFail("Result 1", "Negative response received, NRC=0x%02X", receivedNRC);
+    testStepFail("Result 1", "Negative response, NRC=0x%02X", receivedNRC);
   }
   else
   {
@@ -117,111 +163,504 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 
   /*======================================================
     STEP 2
-    Enter Programming Session 0x02
+    Unlock SFD with BASIC Role, persistent mode
+    (set UnlockRoleType = 4, then UnlockSfdRole_PD)
   ======================================================*/
-  testStep("Step 2", "Enter Programming Session 0x02");
+  testStep("Step 2", "Unlock SFD with BASIC Role, persistent mode");
 
   rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0)
   {
-    testStepFail("Result 2", "Failed to enter Extended Session before Programming Session");
+    testStepFail("Result 2", "Failed to enter Extended Session before unlock");
     return;
   }
 
-  rc = SetProgrammingDiagnosticSession_PD(3000);
+  testWaitForTimeout(500);
+
+  @sysvar::SFDRequest::UnlockRoleType = 4;  /* Basic_Persistent */
+  rc = UnlockSfdRole_PD();
   if (rc != 0)
   {
-    testStepFail("Result 2", "Failed to enter Programming Session 0x02");
+    testStepFail("Result 2", "SFD unlock with BASIC Role failed, rc=%d", rc);
     return;
   }
   else
   {
-    testStepPass("Result 2", "Entered Programming Session 0x02");
+    testStepPass("Result 2", "SFD unlocked with BASIC Role (persistent)");
   }
 
   testWaitForTimeout(500);
 
   /*======================================================
     STEP 3
-    Send the 0x0174 reading request (0x22) in Programming Session
-    Expected: Negative response received with NRC 0x31
+    Read DID 0x0174 — Basic unlocked
+    Expected: 62 01 74 02 XX XX FF
   ======================================================*/
-  testStep("Step 3", "Send the 0x0174 reading request in Programming Session");
+  testStep("Step 3", "Read DID 0x0174 — BASIC Role unlocked");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
-  if (len <= -256)
+  if (len > 0)
+  {
+    testStepPass("Result 3",
+      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[0] == 0x02 && readBuf[3] == 0xFF)
+      testStepPass("Result 3 check", "State=0x02 (Basic), persistent=0xFF as expected");
+    else
+      testStepFail("Result 3 check",
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x02 / 0xFF)",
+        readBuf[0], readBuf[3]);
+  }
+  else if (len <= -256)
   {
     receivedNRC = (-len) - 256;
-    if (receivedNRC == 0x31)
-    {
-      testStepPass("Result 3", "NRC 0x31 received as expected");
-    }
-    else
-    {
-      testStepFail("Result 3", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
-    }
+    testStepFail("Result 3", "Negative response, NRC=0x%02X", receivedNRC);
   }
   else
   {
-    testStepFail("Result 3", "Negative response with NRC 0x31 expected, got rc=%d", len);
+    testStepFail("Result 3", "Read DID 0x0174 failed, rc=%d", len);
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 4
-    Enter Extended Diagnostics Session 0x03
+    Lock SFD (RID 0xC005 in Extended Session)
   ======================================================*/
-  testStep("Step 4", "Enter Extended Diagnostics Session 0x03");
+  testStep("Step 4", "Lock SFD via RID 0xC005");
+
+  rc = SFD_lock_PD();
+  if (rc != 0)
+  {
+    testStepFail("Result 4", "SFD lock failed, rc=%d", rc);
+    return;
+  }
+  else
+  {
+    testStepPass("Result 4", "SFD locked");
+  }
+
+  testWaitForTimeout(500);
 
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0)
   {
-    testStepFail("Result 4", "Failed to enter Default Session before Extended Session");
+    testStepFail("Result 4", "Failed to return to Default Session after lock");
     return;
-  }
-
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 4", "Failed to enter Extended Diagnostic Session 0x03");
-    return;
-  }
-  else
-  {
-    testStepPass("Result 4", "Entered Extended Diagnostic Session 0x03");
   }
 
   testWaitForTimeout(500);
 
   /*======================================================
     STEP 5
-    Send the 0x0174 reading request (0x22) in Extended Session
-    Expected: Positive response received
+    Unlock SFD with EXTENDED Role, persistent mode
+    (set UnlockRoleType = 3, then UnlockSfdRole_PD)
   ======================================================*/
-  testStep("Step 5", "Send the 0x0174 reading request in Extended Session");
+  testStep("Step 5", "Unlock SFD with EXTENDED Role, persistent mode");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 5", "Failed to enter Extended Session before unlock");
+    return;
+  }
+
+  testWaitForTimeout(500);
+
+  @sysvar::SFDRequest::UnlockRoleType = 3;  /* Extended_Persistent */
+  rc = UnlockSfdRole_PD();
+  if (rc != 0)
+  {
+    testStepFail("Result 5", "SFD unlock with EXTENDED Role failed, rc=%d", rc);
+    return;
+  }
+  else
+  {
+    testStepPass("Result 5", "SFD unlocked with EXTENDED Role (persistent)");
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 6
+    Read DID 0x0174 — Extended unlocked
+    Expected: 62 01 74 03 XX XX FF
+  ======================================================*/
+  testStep("Step 6", "Read DID 0x0174 — EXTENDED Role unlocked");
 
   len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
 
   if (len > 0)
   {
-    testStepPass("Result 5", "Positive response received for DID 0x0174 (len=%d)", len);
+    testStepPass("Result 6",
+      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[0] == 0x03 && readBuf[3] == 0xFF)
+      testStepPass("Result 6 check", "State=0x03 (Extended), persistent=0xFF as expected");
+    else
+      testStepFail("Result 6 check",
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x03 / 0xFF)",
+        readBuf[0], readBuf[3]);
   }
   else if (len <= -256)
   {
     receivedNRC = (-len) - 256;
-    testStepFail("Result 5", "Negative response received, NRC=0x%02X", receivedNRC);
+    testStepFail("Result 6", "Negative response, NRC=0x%02X", receivedNRC);
   }
   else
   {
-    testStepFail("Result 5", "Read DID 0x0174 failed, rc=%d", len);
+    testStepFail("Result 6", "Read DID 0x0174 failed, rc=%d", len);
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 7
+    Lock SFD
+  ======================================================*/
+  testStep("Step 7", "Lock SFD via RID 0xC005");
+
+  rc = SFD_lock_PD();
+  if (rc != 0)
+  {
+    testStepFail("Result 7", "SFD lock failed, rc=%d", rc);
+    return;
+  }
+  else
+  {
+    testStepPass("Result 7", "SFD locked");
+  }
+
+  testWaitForTimeout(500);
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 7", "Failed to return to Default Session after lock");
+    return;
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 8
+    Unlock SFD with SUPERUSER Role, persistent mode
+    (set UnlockRoleType = 1, then UnlockSfdRole_PD)
+  ======================================================*/
+  testStep("Step 8", "Unlock SFD with SUPERUSER Role, persistent mode");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 8", "Failed to enter Extended Session before unlock");
+    return;
+  }
+
+  testWaitForTimeout(500);
+
+  @sysvar::SFDRequest::UnlockRoleType = 1;  /* Superuser_Persistent */
+  rc = UnlockSfdRole_PD();
+  if (rc != 0)
+  {
+    testStepFail("Result 8", "SFD unlock with SUPERUSER Role failed, rc=%d", rc);
+    return;
+  }
+  else
+  {
+    testStepPass("Result 8", "SFD unlocked with SUPERUSER Role (persistent)");
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 9
+    Read DID 0x0174 — Superuser unlocked (still in Extended)
+    Expected: 62 01 74 04 XX XX FF
+  ======================================================*/
+  testStep("Step 9", "Read DID 0x0174 — SUPERUSER Role unlocked (Extended Session)");
+
+  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+
+  if (len > 0)
+  {
+    testStepPass("Result 9",
+      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[0] == 0x04 && readBuf[3] == 0xFF)
+      testStepPass("Result 9 check", "State=0x04 (Superuser), persistent=0xFF as expected");
+    else
+      testStepFail("Result 9 check",
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x04 / 0xFF)",
+        readBuf[0], readBuf[3]);
+  }
+  else if (len <= -256)
+  {
+    receivedNRC = (-len) - 256;
+    testStepFail("Result 9", "Negative response, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 9", "Read DID 0x0174 failed, rc=%d", len);
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 10
+    Enter Extended Diagnostics Session 0x03
+    (already in Extended after unlock — re-confirm)
+  ======================================================*/
+  testStep("Step 10", "Enter Extended Diagnostics Session 0x03");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 10", "Failed to enter Extended Diagnostic Session 0x03");
+    return;
+  }
+  else
+  {
+    testStepPass("Result 10", "Extended Diagnostic Session 0x03 confirmed");
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 11
+    Read DID 0x0174 in Extended Session — still Superuser unlocked
+    Expected: 62 01 74 04 XX XX FF
+  ======================================================*/
+  testStep("Step 11", "Read DID 0x0174 in Extended Session — SUPERUSER still active");
+
+  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+
+  if (len > 0)
+  {
+    testStepPass("Result 11",
+      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[0] == 0x04 && readBuf[3] == 0xFF)
+      testStepPass("Result 11 check", "State=0x04 (Superuser) persists in Extended Session as expected");
+    else
+      testStepFail("Result 11 check",
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x04 / 0xFF)",
+        readBuf[0], readBuf[3]);
+  }
+  else if (len <= -256)
+  {
+    receivedNRC = (-len) - 256;
+    testStepFail("Result 11", "Negative response, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 11", "Read DID 0x0174 failed, rc=%d", len);
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 12
+    Lock SFD
+  ======================================================*/
+  testStep("Step 12", "Lock SFD via RID 0xC005");
+
+  rc = SFD_lock_PD();
+  if (rc != 0)
+  {
+    testStepFail("Result 12", "SFD lock failed, rc=%d", rc);
+    return;
+  }
+  else
+  {
+    testStepPass("Result 12", "SFD locked");
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 13
+    Enter Default Diagnostic Session 0x01
+  ======================================================*/
+  testStep("Step 13", "Enter Default Diagnostic Session 0x01");
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 13", "Failed to enter Default Diagnostic Session 0x01");
+    return;
+  }
+  else
+  {
+    testStepPass("Result 13", "Default Diagnostic Session 0x01 entered");
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 14
+    Unlock SFD with PRODUCTION Role, persistent mode
+    (set UnlockRoleType = 2, then UnlockSfdRole_PD)
+  ======================================================*/
+  testStep("Step 14", "Unlock SFD with PRODUCTION Role, persistent mode");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 14", "Failed to enter Extended Session before unlock");
+    return;
+  }
+
+  testWaitForTimeout(500);
+
+  @sysvar::SFDRequest::UnlockRoleType = 2;  /* Production_Persistent */
+  rc = UnlockSfdRole_PD();
+  if (rc != 0)
+  {
+    testStepFail("Result 14", "SFD unlock with PRODUCTION Role failed, rc=%d", rc);
+    return;
+  }
+  else
+  {
+    testStepPass("Result 14", "SFD unlocked with PRODUCTION Role (persistent)");
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 15
+    Read DID 0x0174 — Production unlocked
+    Expected: 62 01 74 05 XX XX FF
+  ======================================================*/
+  testStep("Step 15", "Read DID 0x0174 — PRODUCTION Role unlocked");
+
+  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+
+  if (len > 0)
+  {
+    testStepPass("Result 15",
+      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[0] == 0x05 && readBuf[3] == 0xFF)
+      testStepPass("Result 15 check", "State=0x05 (Production), persistent=0xFF as expected");
+    else
+      testStepFail("Result 15 check",
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x05 / 0xFF)",
+        readBuf[0], readBuf[3]);
+  }
+  else if (len <= -256)
+  {
+    receivedNRC = (-len) - 256;
+    testStepFail("Result 15", "Negative response, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 15", "Read DID 0x0174 failed, rc=%d", len);
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 16
+    Lock SFD
+  ======================================================*/
+  testStep("Step 16", "Lock SFD via RID 0xC005");
+
+  rc = SFD_lock_PD();
+  if (rc != 0)
+  {
+    testStepFail("Result 16", "SFD lock failed, rc=%d", rc);
+    return;
+  }
+  else
+  {
+    testStepPass("Result 16", "SFD locked");
+  }
+
+  testWaitForTimeout(500);
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 16", "Failed to return to Default Session after lock");
+    return;
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 17
+    Unlock SFD with OTA Role, persistent mode
+    NOTE: OTA role is not explicitly mapped in LocalScriptRunner.can
+    (values 1-12 only). The backend defaults to Superuser_Persistent
+    for unmapped values. If a dedicated OTA role type value is defined
+    in the project, replace the UnlockRoleType value below accordingly.
+    Using UnlockRoleType = 2 (Production_Persistent) as closest
+    available persistent role — update if OTA gets its own type ID.
+  ======================================================*/
+  testStep("Step 17", "Unlock SFD with OTA Role, persistent mode");
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 17", "Failed to enter Extended Session before unlock");
+    return;
+  }
+
+  testWaitForTimeout(500);
+
+  @sysvar::SFDRequest::UnlockRoleType = 2;  /* Production_Persistent — update if OTA has dedicated type */
+  rc = UnlockSfdRole_PD();
+  if (rc != 0)
+  {
+    testStepFail("Result 17", "SFD unlock with OTA Role failed, rc=%d", rc);
+    return;
+  }
+  else
+  {
+    testStepPass("Result 17", "SFD unlock sequence for OTA Role executed");
+  }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 18
+    Read DID 0x0174 — OTA unlocked
+    Expected: 62 01 74 06 XX XX FF
+  ======================================================*/
+  testStep("Step 18", "Read DID 0x0174 — OTA Role unlocked");
+
+  len = ReadDid_PD(0x0174, readBuf, elcount(readBuf));
+
+  if (len > 0)
+  {
+    testStepPass("Result 18",
+      "Positive response: 62 01 74 %02X %02X %02X %02X (len=%d)",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], len);
+    if (readBuf[0] == 0x06 && readBuf[3] == 0xFF)
+      testStepPass("Result 18 check", "State=0x06 (OTA), persistent=0xFF as expected");
+    else
+      testStepFail("Result 18 check",
+        "Unexpected state: readBuf[0]=0x%02X readBuf[3]=0x%02X (expected 0x06 / 0xFF)",
+        readBuf[0], readBuf[3]);
+  }
+  else if (len <= -256)
+  {
+    receivedNRC = (-len) - 256;
+    testStepFail("Result 18", "Negative response, NRC=0x%02X", receivedNRC);
+  }
+  else
+  {
+    testStepFail("Result 18", "Read DID 0x0174 failed, rc=%d", len);
   }
 
   /*==========================================================
     POST-CONDITIONS
+    ECU unlocked (last unlock was OTA/Production role)
   ==========================================================*/
   testWaitForTimeout(1000);
 
-  testStep("Postcondition", "none");
+  testStepPass("Postcondition", "ECU SFD unlocked (OTA/Production Role, persistent)");
 
   write("=== TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD END ===");
 }

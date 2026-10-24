@@ -59,6 +59,8 @@ testcase TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD()
   StartRestBusSimulation();
   testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
 
+  testWaitForTimeout(20000);  /* Wait for ECU boot after Klemme15 */
+
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
 
