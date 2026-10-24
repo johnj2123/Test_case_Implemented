@@ -61,7 +61,7 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
 
   testWaitForTimeout(500);
 
-  /* Lock SFD first (handles any persistent unlock from a previous run) */
+  /* SFD Lock precondition */
   rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0) { testStepFail("Precondition", "Failed to enter Extended Session for SFD lock"); return; }
 
@@ -69,23 +69,7 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (rc != 0) { testStepFail("Precondition", "Failed to lock SFD, rc=%d", rc); return; }
   testStepPass("Precondition", "ECU SFD locked");
 
-  /* Power cycle AFTER locking — persistent unlock survives Klemme15 but lock command clears it */
-  DisableClamp15();
-  testStepPass("Precondition", "Clamp 15 disabled (power cycle to flush persistent state)");
-  testWaitForTimeout(2000);
-
-  EnableClamp15();
-  testStepPass("Precondition", "Clamp 15 re-enabled");
-
-  testWaitForTimeout(20000);  /* Wait for ECU reboot */
-
-  ConnectDiagClientToDiagCAN();
-  testStepPass("Precondition", "Diag client reconnected after power cycle");
-
   testWaitForTimeout(500);
-
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0) { testStepFail("Precondition", "Failed to enter Extended Session after reboot"); return; }
 
   /* Confirm locked via 0174: Default -> Extended -> raw 22 01 74 */
   rc = SetDefaultDiagnosticSession_PD(3000);
@@ -109,16 +93,10 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
     if (readBuf[3] == 0x00)
       testStepPass("Precondition", "SFD locked confirmed (Role=0x00)");
     else
-    {
       testStepFail("Precondition", "SFD not locked — Role=0x%02X (expected 0x00)", readBuf[3]);
-      return;
-    }
   }
   else
-  {
     testStepFail("Precondition", "0174 read failed, rc=%d", len);
-    return;
-  }
 
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0) { testStepFail("Precondition", "Failed to return to Default Session"); return; }
