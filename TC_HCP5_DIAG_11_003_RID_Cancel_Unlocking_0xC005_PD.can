@@ -84,12 +84,17 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (nrc >= 0) { len = -(0x100 + nrc); }
   else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
 
-  if (len > 0 && readBuf[3] == 0x00)
-    testStepPass("Precondition", "SFD locked confirmed (0174 Role=0x00)");
-  else if (len > 0)
-    testStepPass("Precondition", "0174 positive response (Role=0x%02X)", readBuf[3]);
+  if (len > 0)
+  {
+    testStepPass("Precondition", "DID 0x0174 response: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X (len=%d)",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], readBuf[6], len);
+    if (readBuf[3] == 0x00)
+      testStepPass("Precondition", "SFD locked confirmed (Role=0x00)");
+    else
+      testStepFail("Precondition", "SFD not locked — Role=0x%02X (expected 0x00)", readBuf[3]);
+  }
   else
-    testStepFail("Precondition", "0174 read failed or NRC=0x%02X", (-len)-256);
+    testStepFail("Precondition", "0174 read failed, rc=%d", len);
 
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0) { testStepFail("Precondition", "Failed to return to Default Session"); return; }
@@ -218,13 +223,21 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (len > 0)
   {
     testStepPass("Result 8", "Positive response for RID 0xC005 in Extended (len=%d)", len);
-    /* readBuf: 71 01 C0 05 routineStatusRecord Response */
-    if (len >= 6 && readBuf[4] == 0x24 && readBuf[5] == 0x00)
-      testStepPass("Result 8 check", "routineStatusRecord=0x24, Response=0x00 as expected");
-    else if (len >= 5)
-      testStepPass("Result 8 check", "Positive response received (routineStatusRecord=0x%02X)", readBuf[4]);
+    testStepPass("Result 8 raw", "Response: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
+    /* wire: 71 01 C0 05 routineStatusRecord Response */
+    if (readBuf[0] == 0x71 && readBuf[1] == 0x01 && readBuf[2] == 0xC0 && readBuf[3] == 0x05)
+      testStepPass("Result 8 check", "SID+RID echo correct (71 01 C0 05)");
     else
-      testStepPass("Result 8 check", "Positive response received");
+      testStepFail("Result 8 check", "SID+RID echo wrong: 0x%02X 0x%02X 0x%02X 0x%02X",
+        readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+    if (len >= 6 && readBuf[4] == 0x24 && readBuf[5] == 0x00)
+      testStepPass("Result 8 check2", "routineStatusRecord=0x24, Response=0x00 as expected");
+    else if (len >= 6)
+      testStepFail("Result 8 check2", "Unexpected: routineStatusRecord=0x%02X Response=0x%02X (expected 0x24, 0x00)",
+        readBuf[4], readBuf[5]);
+    else
+      testStepFail("Result 8 check2", "Response too short for routineStatusRecord check (len=%d)", len);
   }
   else if (len <= -256)
     testStepFail("Result 8", "Unexpected NRC=0x%02X", (-len)-256);
@@ -252,10 +265,13 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (len > 0)
   {
     testStepPass("Result 9", "Positive response for DID 0x0174 (len=%d)", len);
+    testStepPass("Result 9 raw", "Response: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], readBuf[6]);
     if (readBuf[3] == 0x00 && readBuf[4] == 0x00)
       testStepPass("Result 9 check", "Role=0x00, Type=0x00 - SFD locked confirmed");
     else
-      testStepPass("Result 9 check", "0174 response: Role=0x%02X Type=0x%02X", readBuf[3], readBuf[4]);
+      testStepFail("Result 9 check", "Unexpected: Role=0x%02X Type=0x%02X (expected 0x00, 0x00)",
+        readBuf[3], readBuf[4]);
   }
   else if (len <= -256)
     testStepFail("Result 9", "NRC=0x%02X", (-len)-256);
@@ -302,10 +318,16 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (nrc >= 0) { len = -(0x100 + nrc); }
   else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
 
-  if (len > 0 && readBuf[3] == 0x04 && readBuf[4] == 0x03)
-    testStepPass("Result 10 check", "ECU SFD unlocked - Role=0x04, Type=0x03 confirmed (62 01 74 04 03 01 FF)");
-  else if (len > 0)
-    testStepPass("Result 10 check", "0174 positive: Role=0x%02X Type=0x%02X", readBuf[3], readBuf[4]);
+  if (len > 0)
+  {
+    testStepPass("Result 10 raw", "Response: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], readBuf[6]);
+    if (readBuf[3] == 0x04 && readBuf[4] == 0x03)
+      testStepPass("Result 10 check", "ECU SFD unlocked - Role=0x04, Type=0x03 confirmed");
+    else
+      testStepFail("Result 10 check", "Unexpected: Role=0x%02X Type=0x%02X (expected 0x04, 0x03)",
+        readBuf[3], readBuf[4]);
+  }
   else
     testStepFail("Result 10 check", "0174 read failed after unlock");
 
@@ -329,10 +351,13 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (len > 0)
   {
     testStepPass("Result 11", "Positive response for DID 0x0174 (len=%d)", len);
+    testStepPass("Result 11 raw", "Response: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], readBuf[6]);
     if (readBuf[3] == 0x04 && readBuf[6] == 0xFF)
       testStepPass("Result 11 check", "Role=0x04, Duration=0xFF as expected");
     else
-      testStepPass("Result 11 check", "0174 response: Role=0x%02X Duration=0x%02X", readBuf[3], readBuf[6]);
+      testStepFail("Result 11 check", "Unexpected: Role=0x%02X Duration=0x%02X (expected 0x04, 0xFF)",
+        readBuf[3], readBuf[6]);
   }
   else if (len <= -256)
     testStepFail("Result 11", "NRC=0x%02X", (-len)-256);
@@ -358,7 +383,16 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
 
   if (len > 0)
+  {
     testStepPass("Result 12", "Positive response for RID 0xC005 (re-lock) in Extended (len=%d)", len);
+    testStepPass("Result 12 raw", "Response: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5]);
+    if (readBuf[0] == 0x71 && readBuf[1] == 0x01 && readBuf[2] == 0xC0 && readBuf[3] == 0x05)
+      testStepPass("Result 12 check", "SID+RID echo correct (71 01 C0 05)");
+    else
+      testStepFail("Result 12 check", "SID+RID echo wrong: 0x%02X 0x%02X 0x%02X 0x%02X",
+        readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+  }
   else if (len <= -256)
     testStepFail("Result 12", "Unexpected NRC=0x%02X", (-len)-256);
   else
@@ -385,11 +419,14 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (len > 0)
   {
     testStepPass("Result 13", "Positive response for DID 0x0174 (len=%d)", len);
-    /* Role=0x00, Type=0x00, Status=0x01, Duration=0x00 */
+    testStepPass("Result 13 raw", "Response: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+      readBuf[0], readBuf[1], readBuf[2], readBuf[3], readBuf[4], readBuf[5], readBuf[6]);
+    /* Role=0x00, Type=0x00, Duration=0x00 → SFD locked */
     if (readBuf[3] == 0x00 && readBuf[4] == 0x00 && readBuf[6] == 0x00)
       testStepPass("Result 13 check", "Role=0x00, Type=0x00, Duration=0x00 - SFD locked confirmed");
     else
-      testStepPass("Result 13 check", "0174: Role=0x%02X Type=0x%02X Duration=0x%02X", readBuf[3], readBuf[4], readBuf[6]);
+      testStepFail("Result 13 check", "Unexpected: Role=0x%02X Type=0x%02X Duration=0x%02X (expected 0x00, 0x00, 0x00)",
+        readBuf[3], readBuf[4], readBuf[6]);
   }
   else if (len <= -256)
     testStepFail("Result 13", "NRC=0x%02X", (-len)-256);
