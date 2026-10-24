@@ -709,7 +709,7 @@
     <center>
       <table class="OverallResultTable">
         <tr>
-          <td class="PositiveResult">Test passed</td>
+          <td class="NegativeResult">Test failed</td>
         </tr>
       </table>
     </center>
@@ -892,7 +892,7 @@
           </tr>
           <tr>
             <td class="CellNoColor">Last modification of Test Module File: </td>
-            <td class="CellNoColor">2026-10-23, 22:03:38</td>
+            <td class="CellNoColor">2026-10-25, 00:59:41</td>
           </tr>
           <tr>
             <td class="CellNoColor">Windows Computer Name: </td>
@@ -1337,13 +1337,13 @@
       <table class="DefaultTable">
         <tr>
           <td style="padding-right: 0.5em;" class="CellNoColor">Test begin: </td>
-          <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-23 22:11:01</td>
-          <td class="CellNoColor">(logging timestamp   18.124000)</td>
+          <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-25 01:04:08</td>
+          <td class="CellNoColor">(logging timestamp  195.307171)</td>
         </tr>
         <tr>
           <td style="padding-right: 0.5em;" class="CellNoColor">Test end: </td>
-          <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-23 22:11:03</td>
-          <td class="CellNoColor" nowrap>(logging timestamp   20.146262)</td>
+          <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-25 01:05:07</td>
+          <td class="CellNoColor" nowrap>(logging timestamp  254.178807)</td>
         </tr>
       </table>
       <div class="Heading4">Statistics</div>
@@ -1366,13 +1366,13 @@
           </tr>
           <tr>
             <td class="DefineCell">Test cases passed </td>
-            <td class="NumberCellPositiveResult">1</td>
-            <td class="NumberCellPositiveResult">100% of executed test cases</td>
+            <td class="NumberCell">0</td>
+            <td class="NumberCell">0% of executed test cases</td>
           </tr>
           <tr>
             <td class="DefineCell">Test cases failed </td>
-            <td class="NumberCell">0</td>
-            <td class="NumberCell">0% of executed test cases</td>
+            <td class="NumberCellNegativeResult">1</td>
+            <td class="NumberCellNegativeResult">100% of executed test cases</td>
           </tr>
         </table>
       </div>
@@ -1383,9 +1383,11 @@
             <td class="DefineCell">1</td>
             <td class="DefaultCell"></td>
             <td class="DefaultCell">
-              <a href="#i__-2085886032_9">TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD</a>
+              <a href="#i__-1298386896_9">TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD</a>
             </td>
-            <td class="PositiveResultCell">pass</td>
+            <td class="NegativeResultCell">
+              <a href="#i__-1298386896_195" onclick="showTC('1')">fail</a>
+            </td>
           </tr>
         </table>
       </div>
@@ -1413,8 +1415,8 @@
         <td class="LinkCell">
           <a class="Undecorated" id="lnk_1" href="javascript:switchAll('1',document.all['lnk_1'].text)">[−]</a>
         </td>
-        <td class="TestcaseHeadingPositiveResult">
-          <big class="Heading3">1 <a name="i__-2085886032_9">TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD</a>: Passed</big>
+        <td class="TestcaseHeadingNegativeResult">
+          <big class="Heading3">1 <a name="i__-1298386896_9">TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD</a>: Failed</big>
         </td>
       </tr>
     </table>
@@ -1423,13 +1425,13 @@
         <table class="DefaultTable">
           <tr>
             <td style="padding-right: 0.5em;" class="CellNoColor">Test case begin: </td>
-            <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-23 22:11:01</td>
-            <td class="CellNoColor">(logging timestamp   18.124000)</td>
+            <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-25 01:04:08</td>
+            <td class="CellNoColor">(logging timestamp  195.307171)</td>
           </tr>
           <tr>
             <td style="padding-right: 0.5em;" class="CellNoColor">Test case end: </td>
-            <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-23 22:11:03</td>
-            <td class="CellNoColor" nowrap>(logging timestamp   20.146262)</td>
+            <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-25 01:05:07</td>
+            <td class="CellNoColor" nowrap>(logging timestamp  254.178807)</td>
           </tr>
         </table>
       </div>
@@ -1450,136 +1452,592 @@
             <th class="TableHeadingCell" width="1px">Result</th>
           </tr>
           <tr>
-            <td class="DefineCell">  18.124000</td>
+            <td class="DefineCell"> 195.307171</td>
             <td class="NumberCell">Precondition</td>
             <td class="DefaultCell">Enable Clamp 30</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  18.124000</td>
+            <td class="DefineCell"> 195.307171</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Clamp 30 enabled</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.307171</td>
             <td class="NumberCell">Precondition</td>
             <td class="DefaultCell">Enable Clamp 15</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.124000</td>
+            <td class="DefineCell"> 195.307171</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Clamp 15 enabled</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 197.307171</td>
             <td class="NumberCell">Resume reason</td>
             <td class="DefaultCell">Elapsed time=2000ms (max=2000ms)</td>
             <td class="DefaultCell">-</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.124000</td>
+            <td class="DefineCell"> 197.307171</td>
             <td class="NumberCell">Precondition</td>
-            <td class="DefaultCell">Restbus simulation running (all ECUs transmit KN and NMH messages)</td>
+            <td class="DefaultCell">Restbus simulation running</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.125579</td>
+            <td class="DefineCell"> 217.307171</td>
             <td class="NumberCell">Resume reason</td>
-            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_VD' Elapsed time=1.57853ms (max=3000ms)</td>
+            <td class="DefaultCell">Elapsed time=20000ms (max=20000ms)</td>
             <td class="DefaultCell">-</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.125579</td>
+            <td class="DefineCell"> 217.308171</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_VD' Elapsed time=1.00006ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 217.308171</td>
             <td class="NumberCell">Precondition</td>
             <td class="DefaultCell">Connect diagnostic client to Diag-CAN</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.125579</td>
+            <td class="DefineCell"> 217.308171</td>
             <td class="NumberCell">Precondition</td>
-            <td class="DefaultCell">Diag client connected to Diag-CAN (PD)</td>
+            <td class="DefaultCell">Diag client connected to Diag-CAN</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.130825</td>
+            <td class="DefineCell"> 217.808171</td>
             <td class="NumberCell">Resume reason</td>
-            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=5.24627ms (max=3000ms)</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
             <td class="DefaultCell">-</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.130825</td>
+            <td class="DefineCell"> 217.840167</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=31.9957ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 217.844651</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.4843ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 217.844651</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">ECU SFD locked</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 217.849003</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.3523ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 217.852708</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.70431ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 217.855658</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=2.95034ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 217.855658</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">DID 0x0174 response: 0x71 0x01 0xC0 0x05 0x00 0x00 0x00 (len=6)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr id="i__-1298386896_195">
+            <td class="DefineCell"> 217.855658</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">SFD not locked â€” Role=0x05 (expected 0x00)</td>
+            <td class="NegativeResultCell">fail</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 217.859272</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.61431ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 217.859272</td>
             <td class="NumberCell">Precondition</td>
             <td class="DefaultCell">Default Diagnostic Session 0x01 entered</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.130825</td>
+            <td class="DefineCell"> 218.359272</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 218.359272</td>
             <td class="NumberCell">Step 1</td>
             <td class="DefaultCell">Send RID 0xC005 StartRoutine in Default Session</td>
             <td class="DefaultCell">-</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.136791</td>
+            <td class="DefineCell"> 218.363841</td>
             <td class="NumberCell">Resume reason</td>
-            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=5.96622ms (max=10000ms)</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.5683ms (max=5000ms)</td>
             <td class="DefaultCell">-</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.136791</td>
+            <td class="DefineCell"> 218.363841</td>
             <td class="NumberCell">Result 1</td>
             <td class="DefaultCell">NRC 0x31 received as expected in Default Session</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.136791</td>
-            <td class="NumberCell">Step 2</td>
-            <td class="DefaultCell">Enter Extended Diagnostics Session 0x03</td>
-            <td class="DefaultCell">-</td>
-          </tr>
-          <tr>
-            <td class="DefineCell">  20.140671</td>
+            <td class="DefineCell"> 218.863841</td>
             <td class="NumberCell">Resume reason</td>
-            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.88028ms (max=3000ms)</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
             <td class="DefaultCell">-</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.140671</td>
+            <td class="DefineCell"> 218.863841</td>
+            <td class="NumberCell">Step 2</td>
+            <td class="DefaultCell">Enter Default Session (10 01)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 218.868443</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.6023ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 218.868443</td>
             <td class="NumberCell">Result 2</td>
-            <td class="DefaultCell">Entered Extended Diagnostic Session 0x03</td>
+            <td class="DefaultCell">Default Session entered</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.140671</td>
+            <td class="DefineCell"> 218.868443</td>
             <td class="NumberCell">Step 3</td>
+            <td class="DefaultCell">Enter Extended Session (10 03)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 218.872221</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.77831ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 218.872221</td>
+            <td class="NumberCell">Result 3</td>
+            <td class="DefaultCell">Extended Session entered</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 218.872221</td>
+            <td class="NumberCell">Step 4</td>
+            <td class="DefaultCell">Enter Programming Session (10 02)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 218.886262</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=14.0405ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 218.886262</td>
+            <td class="NumberCell">Result 4</td>
+            <td class="DefaultCell">Programming Session entered</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.386262</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.386262</td>
+            <td class="NumberCell">Step 5</td>
+            <td class="DefaultCell">Send RID 0xC005 StartRoutine in Programming Session</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.393872</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=7.61025ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.393872</td>
+            <td class="NumberCell">Result 5</td>
+            <td class="DefaultCell">NRC 0x31 received as expected in Programming Session</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.893872</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.893872</td>
+            <td class="NumberCell">Step 6</td>
+            <td class="DefaultCell">Enter Default Session (10 01)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.899079</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=5.20664ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.899079</td>
+            <td class="NumberCell">Result 6</td>
+            <td class="DefaultCell">Default Session entered</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.899079</td>
+            <td class="NumberCell">Step 7</td>
+            <td class="DefaultCell">Enter Extended Session (10 03)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.904807</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=5.72828ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 219.904807</td>
+            <td class="NumberCell">Result 7</td>
+            <td class="DefaultCell">Extended Session entered</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 220.404807</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 220.404807</td>
+            <td class="NumberCell">Step 8</td>
             <td class="DefaultCell">Send RID 0xC005 StartRoutine in Extended Session</td>
             <td class="DefaultCell">-</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.144352</td>
+            <td class="DefineCell"> 220.409223</td>
             <td class="NumberCell">Resume reason</td>
-            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.68028ms (max=10000ms)</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.4163ms (max=5000ms)</td>
             <td class="DefaultCell">-</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.144352</td>
-            <td class="NumberCell">Result 3</td>
-            <td class="DefaultCell">Positive response received for RID 0xC005 (71 01 C0 05), len=6</td>
+            <td class="DefineCell"> 220.409223</td>
+            <td class="NumberCell">Result 8</td>
+            <td class="DefaultCell">Positive response for RID 0xC005 in Extended (len=6)</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.144352</td>
-            <td class="NumberCell">Step 4</td>
-            <td class="DefaultCell">Read DID 0x0174 to confirm SFD locked state</td>
-            <td class="DefaultCell">-</td>
-          </tr>
-          <tr>
-            <td class="DefineCell">  20.146262</td>
-            <td class="NumberCell">Resume reason</td>
-            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_VD' Elapsed time=1.91034ms (max=5000ms)</td>
-            <td class="DefaultCell">-</td>
-          </tr>
-          <tr>
-            <td class="DefineCell">  20.146262</td>
-            <td class="NumberCell">Result 4</td>
-            <td class="DefaultCell">Positive response received for DID 0x0174 - SFD locked state confirmed (len=7)</td>
+            <td class="DefineCell"> 220.409223</td>
+            <td class="NumberCell">Result 8 raw</td>
+            <td class="DefaultCell">Response: 0x71 0x01 0xC0 0x05 0x24 0x00</td>
             <td class="PositiveResultCell">pass</td>
           </tr>
           <tr>
-            <td class="DefineCell">  20.146262</td>
+            <td class="DefineCell"> 220.409223</td>
+            <td class="NumberCell">Result 8 check</td>
+            <td class="DefaultCell">SID+RID echo correct (71 01 C0 05)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 220.409223</td>
+            <td class="NumberCell">Result 8 check2</td>
+            <td class="DefaultCell">routineStatusRecord=0x24, Response=0x00 as expected</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 220.909223</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 220.909223</td>
+            <td class="NumberCell">Step 9</td>
+            <td class="DefaultCell">Read DID 0x0174 in Extended Session - confirm SFD locked</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 220.914873</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=5.6503ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 220.914873</td>
+            <td class="NumberCell">Result 9</td>
+            <td class="DefaultCell">Positive response for DID 0x0174 (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 220.914873</td>
+            <td class="NumberCell">Result 9 raw</td>
+            <td class="DefaultCell">Response: 0x62 0x01 0x74 0x00 0x00 0x01 0x00</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 220.914873</td>
+            <td class="NumberCell">Result 9 check</td>
+            <td class="DefaultCell">Role=0x00, Type=0x00 - SFD locked confirmed</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 221.414873</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 221.414873</td>
+            <td class="NumberCell">Step 10</td>
+            <td class="DefaultCell">SFD UnLock SuperUser Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 221.418564</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.69031ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 221.421994</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.43031ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 221.581274</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=159.28ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 226.581274</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 236.581274</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=10000ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 238.581274</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=2000ms (max=2000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 245.581274</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=7000ms (max=7000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 250.581274</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 250.603744</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=22.4699ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 251.603744</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=1000ms (max=1000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 251.637544</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=33.7997ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 251.637544</td>
+            <td class="NumberCell">Result 10</td>
+            <td class="DefaultCell">SFD UnLock SuperUser completed</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 251.643680</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=6.13627ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 251.655294</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=11.6141ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 251.660496</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=5.20228ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 251.660496</td>
+            <td class="NumberCell">Result 10 raw</td>
+            <td class="DefaultCell">Response: 0x62 0x01 0x74 0x04 0x03 0x01 0xFF</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 251.660496</td>
+            <td class="NumberCell">Result 10 check</td>
+            <td class="DefaultCell">ECU SFD unlocked - Role=0x04, Type=0x03 confirmed</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.160496</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.160496</td>
+            <td class="NumberCell">Step 11</td>
+            <td class="DefaultCell">Read DID 0x0174 - confirm unlocked state (Role=0x04, Duration=0xFF)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.164513</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.0163ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.164513</td>
+            <td class="NumberCell">Result 11</td>
+            <td class="DefaultCell">Positive response for DID 0x0174 (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.164513</td>
+            <td class="NumberCell">Result 11 raw</td>
+            <td class="DefaultCell">Response: 0x62 0x01 0x74 0x04 0x03 0x01 0xFF</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.164513</td>
+            <td class="NumberCell">Result 11 check</td>
+            <td class="DefaultCell">Role=0x04, Duration=0xFF as expected</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.664513</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.664513</td>
+            <td class="NumberCell">Step 12</td>
+            <td class="DefaultCell">Send RID 0xC005 in Extended Session (cancel unlock / re-lock)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.674667</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=10.1542ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.674667</td>
+            <td class="NumberCell">Result 12</td>
+            <td class="DefaultCell">Positive response for RID 0xC005 (re-lock) in Extended (len=6)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.674667</td>
+            <td class="NumberCell">Result 12 raw</td>
+            <td class="DefaultCell">Response: 0x71 0x01 0xC0 0x05 0x24 0x00</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 252.674667</td>
+            <td class="NumberCell">Result 12 check</td>
+            <td class="DefaultCell">SID+RID echo correct (71 01 C0 05)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 253.174667</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 253.174667</td>
+            <td class="NumberCell">Step 13</td>
+            <td class="DefaultCell">Read DID 0x0174 - confirm SFD locked after C005</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 253.178807</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.1403ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 253.178807</td>
+            <td class="NumberCell">Result 13</td>
+            <td class="DefaultCell">Positive response for DID 0x0174 (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 253.178807</td>
+            <td class="NumberCell">Result 13 raw</td>
+            <td class="DefaultCell">Response: 0x62 0x01 0x74 0x00 0x00 0x01 0x00</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 253.178807</td>
+            <td class="NumberCell">Result 13 check</td>
+            <td class="DefaultCell">Role=0x00, Type=0x00, Duration=0x00 - SFD locked confirmed</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 254.178807</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=1000ms (max=1000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 254.178807</td>
             <td class="NumberCell">Postcondition</td>
             <td class="DefaultCell">none</td>
-            <td class="DefaultCell">-</td>
+            <td class="PositiveResultCell">pass</td>
           </tr>
         </table>
       </div>
