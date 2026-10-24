@@ -108,9 +108,9 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
       diagGetPrimitiveByte(didResp,2), diagGetPrimitiveByte(didResp,3),
       diagGetPrimitiveByte(didResp,4), diagGetPrimitiveByte(didResp,5));
 
-    dataByte = diagGetPrimitiveByte(didResp, 3);
+    dataByte = readBuf[2];
     if (dataByte == 0x03)
-      testStepPass("Result 1 check", "Data=0x03 as expected (62 3C 0E 03)");
+      testStepPass("Result 1 check", "Data=0x03 as expected");
     else
       testStepFail("Result 1 check", "Unexpected Data=0x%02X (expected 0x03)", dataByte);
   }
@@ -149,9 +149,9 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
       diagGetPrimitiveByte(didResp,2), diagGetPrimitiveByte(didResp,3),
       diagGetPrimitiveByte(didResp,4), diagGetPrimitiveByte(didResp,5));
 
-    dataByte = diagGetPrimitiveByte(didResp, 3);
+    dataByte = readBuf[2];
     if (dataByte == 0x03)
-      testStepPass("Result 2 check", "Data=0x03 as expected (62 3C 0E 03)");
+      testStepPass("Result 2 check", "Data=0x03 as expected");
     else
       testStepFail("Result 2 check", "Unexpected Data=0x%02X (expected 0x03)", dataByte);
   }
@@ -202,9 +202,9 @@ testcase TC_HCP5_DIAG_11_002_DID_Protection_Method_0x3C0E_PD()
       diagGetPrimitiveByte(didResp,2), diagGetPrimitiveByte(didResp,3),
       diagGetPrimitiveByte(didResp,4), diagGetPrimitiveByte(didResp,5));
 
-    dataByte = diagGetPrimitiveByte(didResp, 3);
+    dataByte = readBuf[2];
     if (dataByte == 0x03)
-      testStepPass("Result 4 check", "Data=0x03 as expected (62 3C 0E 03)");
+      testStepPass("Result 4 check", "Data=0x03 as expected");
     else
       testStepFail("Result 4 check", "Unexpected Data=0x%02X (expected 0x03)", dataByte);
   }
