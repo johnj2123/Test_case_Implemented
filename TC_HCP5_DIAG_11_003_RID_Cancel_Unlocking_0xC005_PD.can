@@ -69,6 +69,8 @@ testcase TC_HCP5_DIAG_11_003_RID_Cancel_Unlocking_0xC005_PD()
   if (rc != 0) { testStepFail("Precondition", "Failed to lock SFD, rc=%d", rc); return; }
   testStepPass("Precondition", "ECU SFD locked");
 
+  testWaitForTimeout(1000);  /* Wait for ECU to apply lock before reading 0x0174 */
+
   /* Confirm locked via 0174: Default -> Extended -> raw 22 01 74 */
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0) { testStepFail("Precondition", "Failed to enter Default Session"); return; }
