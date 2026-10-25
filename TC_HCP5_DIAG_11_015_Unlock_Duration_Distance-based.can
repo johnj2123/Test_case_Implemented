@@ -29,8 +29,8 @@ includes
        automated without backend integration.
     4. Step 7 (simulate distance): Report uses SetMileage(value=300) which
        injects VDSO_DKmtg signal to simulate 300km (> 200km threshold).
-       Script writes @sysvar::VDSO::VDSO_DKmtg = 30000 (in 0.01km units).
-       Verify exact sysvar name/scale in your CANoe configuration.
+       Script writes @sysvar::EthernetSignals::VDSO_DKmtg_XIX_VDSO_09_XIX_VLAN_FAS = 300000
+       (value is in meters; 300km = 300000m). Confirmed from TC_HCP5_DIAG_05_007.
 
   DID 0x0174 byte layout [Role][Type][Status][Duration]:
     00 00 01 00 = locked / unlock expired
