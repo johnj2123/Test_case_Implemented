@@ -154,13 +154,14 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
 
   if (respLen > 0)
   {
-    if (response[0] == 0x71 && response[2] == 0xC0 && response[3] == 0x12)
+    if (response[0] == 0x71 && response[1] == 0x01 && response[2] == 0xC0 && response[3] == 0x12)
     {
       testStepPass("Result 3", "Positive response received for RID 0xC012 (71 01 C0 12), len=%d", respLen);
     }
     else
     {
-      testStepFail("Result 3", "Response received but content mismatch: response[0]=0x%02X response[2]=0x%02X response[3]=0x%02X", response[0], response[2], response[3]);
+      testStepFail("Result 3", "Response mismatch: 0x%02X 0x%02X 0x%02X 0x%02X (expected 71 01 C0 12)",
+        response[0], response[1], response[2], response[3]);
     }
   }
   else if (respLen <= -256)
@@ -232,7 +233,7 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
   ==========================================================*/
   testWaitForTimeout(1000);
 
-  testStep("Postcondition", "none");
+  testStepPass("Postcondition", "none");
 
   write("=== TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD END ===");
 }
