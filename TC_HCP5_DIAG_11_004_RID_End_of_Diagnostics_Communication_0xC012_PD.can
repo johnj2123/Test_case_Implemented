@@ -8,43 +8,68 @@ includes
   Test Case : TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD
   Source     : HCP5_SysTest
   Domain     : PD
-  Purpose    : The test checks that RID 0xC012 (End of Diagnostics Communication)
-               is correctly implemented on PD. The routine must be rejected
-               with NRC 0x31 in Default Session and in Programming Session,
-               and must return a positive response in Extended Diagnostic Session.
+  Purpose    : Verify RID 0xC012 (End of Diagnostics Communication) on PD.
+               - NRC 0x31 in Default session (step 1)
+               - NRC 0x31 in Programming session (step 3)
+               - Positive (71 01 C0 12) in Extended session (steps 8,12,16)
+               The test exercises the full E2E write flow on DID 0x0330:
+                 C008 (challenge) -> C011 (token) -> WriteDID -> C012 (commit).
+               C012 subfunction 01 returns 24 00 after a compliant write,
+               14 02 if the token was stale/non-compliant.
+               C012 subfunction 02 (step 16) returns 24 01 to finalise.
+
+  DID used   : 0x0330 (E2E-protected, 1-byte value)
+  Compliant payload  : 0x3C   (value confirmed from TRC)
+  Non-compliant payload: 0x2C (different value, causes token mismatch)
 
   Preconditions:
     1. Clamp 30 enabled
     2. Clamp 15 enabled
     3. Restbus simulation running (all ECUs transmit KN and NMH messages)
     4. Connect Diag Client to Diag-CAN
-    5. ECU SFD locked
-    6. Default Diagnostic Session 0x01
+    5. Default Diagnostic Session 0x01
 
   Test Steps / Expected Results:
-    1. Send RID 0xC012 StartRoutine (31 01 C0 12) in Default Session
-       -> Negative response received with NRC 0x31
-    2. Enter Extended Diagnostics Session 0x03
-       -> (session transition)
-    3. Send RID 0xC012 StartRoutine (31 01 C0 12) in Extended Session
-       -> Positive response received (71 01 C0 12 ...)
-    4. Enter Programming Session 0x02
-       -> (session transition)
-    5. Send RID 0xC012 StartRoutine (31 01 C0 12) in Programming Session
-       -> Negative response received with NRC 0x31
+    1.  C012 (31 01 C0 12 01) in Default session       -> NRC 0x31
+    2.  Enter Programming session 0x02                 -> positive
+    3.  C012 in Programming session                    -> NRC 0x31
+    4.  Enter Extended session 0x03                    -> positive
+    5.  Read DID 0x0330                                -> positive, store value
+    6.  Activate E2E for DID 0x0330 via C011 (C008->backend->C011) with payload 0x3C
+                                                       -> 71 01 C0 11 24 00
+    7.  Write DID 0x0330 = 0x3C (compliant)            -> positive (6E 03 30)
+    8.  C012 subfunction 01                            -> 71 01 C0 12 24 00
+    9.  Read DID 0x0330                                -> same payload as step 7
+    10. Repeat C011 for DID 0x0330 with payload 0x2C   -> 71 01 C0 11 (any)
+    11. Write DID 0x0330 = 0x2C (non-compliant)        -> positive (write accepted)
+    12. C012 subfunction 01                            -> 71 01 C0 12 14 02
+    13. Read DID 0x0330                                -> same as step 9 (value unchanged)
+    14. Repeat C011 for DID 0x0330 with payload 0x3C   -> 71 01 C0 11 24 00
+    15. Write DID 0x0330 = 0x3C (compliant)            -> positive
+    16. C012 subfunction 02                            -> 71 01 C0 12 24 01
+    17. Read DID 0x0330                                -> same payload as step 15
 
   Post-Conditions: none
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
 {
-  diagRequest  HCP5_Diag_PD.E2E_finish req;
-  diagResponse HCP5_Diag_PD.E2E_finish resp;
+  /* Typed objects for generic RID/DID sends */
+  diagRequest  HCP5_Diag_PD.*  wreq;
+  diagResponse HCP5_Diag_PD.*  wresp;
 
-  byte routineData[1];
-  byte response[4095];
-  long rc;
-  long respLen;
-  long receivedNRC;
+  /* Typed objects for C012 */
+  diagRequest  HCP5_Diag_PD.E2E_finish  reqC012;
+  diagResponse HCP5_Diag_PD.E2E_finish  respC012;
+
+  byte  emptyData[1];
+  byte  routineData[1];
+  byte  response[256];
+  byte  didPayload[4];
+  byte  readBuf[4];
+  long  respLen;
+  long  rc;
+  long  receivedNRC;
+  long  step5ReadLen;
 
   write("=== TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD START ===");
 
@@ -54,187 +79,314 @@ testcase TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD()
   EnableClamp30();
   EnableClamp15();
   StartRestBusSimulation();
-  testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
+  testStepPass("Precondition", "Clamp30/15 on, Restbus simulation running");
 
-  testWaitForTimeout(20000);  /* Wait for ECU boot after Klemme15 */
+  testWaitForTimeout(20000);
 
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
 
-  testWaitForTimeout(500);
-
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to enter Extended Session for SFD lock");
-    return;
-  }
-
-  rc = SFD_lock_PD();
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to lock SFD");
-    return;
-  }
-  else
-  {
-    testStepPass("Precondition", "ECU SFD locked");
-  }
-
-  testWaitForTimeout(500);
-
+  /* Start in Default session */
   rc = SetDefaultDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to enter Default Diagnostic Session 0x01");
-    return;
-  }
-  else
-  {
-    testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
-  }
-
-  testWaitForTimeout(500);
+  if (rc != 0) { testStepFail("Precondition", "Failed to enter Default Session, rc=%d", rc); return; }
+  testStepPass("Precondition", "Default Diagnostic Session 0x01 active");
 
   /*======================================================
     STEP 1
-    Send RID 0xC012 StartRoutine in Default Session
-    Expected: Negative response received with NRC 0x31
+    C012 StartRoutine (31 01 C0 12 01) in Default Session
+    Expected: NRC 0x31 (requestOutOfRange)
   ======================================================*/
-  testStep("Step 1", "Send RID 0xC012 StartRoutine (31 01 C0 12) in Default Session");
+  testStep("Step 1", "Send RID 0xC012 StartRoutine (31 01 C0 12 01) in Default Session");
 
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC012, routineData, 0, response, elcount(response));
+  routineData[0] = 0x01;
+  respLen = SendRoutineControl(wreq, wresp, 0x01, 0xC012, routineData, 1, response, elcount(response));
 
   if (respLen <= -256)
   {
     receivedNRC = (-respLen) - 256;
     if (receivedNRC == 0x31)
-    {
       testStepPass("Result 1", "NRC 0x31 received as expected in Default Session");
-    }
     else
-    {
-      testStepFail("Result 1", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
-    }
+      testStepFail("Result 1", "Unexpected NRC 0x%02X (expected 0x31)", receivedNRC);
   }
+  else if (respLen > 0)
+    testStepFail("Result 1", "Unexpected positive response in Default Session");
   else
-  {
-    testStepFail("Result 1", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
-  }
+    testStepFail("Result 1", "SendRoutineControl failed, rc=%d", respLen);
 
   testWaitForTimeout(500);
 
   /*======================================================
     STEP 2
-    Enter Extended Diagnostics Session 0x03
+    Enter Programming Session 0x02
+    Expected: positive (50 02)
   ======================================================*/
-  testStep("Step 2", "Enter Extended Diagnostics Session 0x03");
+  testStep("Step 2", "Enter Programming Diagnostics Session 0x02");
 
+  /* Must go Extended first to transition to Programming */
   rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 2", "Failed to enter Extended Diagnostic Session 0x03");
-    return;
-  }
-  else
-  {
-    testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
-  }
+  if (rc != 0) { testStepFail("Result 2", "Failed to enter Extended before Programming, rc=%d", rc); return; }
+
+  rc = SetProgrammingDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 2", "Failed to enter Programming Session, rc=%d", rc); return; }
+  testStepPass("Result 2", "Programming Session 0x02 entered");
 
   testWaitForTimeout(500);
 
   /*======================================================
     STEP 3
-    Send RID 0xC012 StartRoutine in Extended Session
-    Expected: Positive response (71 01 C0 12 ...)
+    C012 StartRoutine in Programming Session
+    Expected: NRC 0x31
   ======================================================*/
-  testStep("Step 3", "Send RID 0xC012 StartRoutine (31 01 C0 12) in Extended Session");
+  testStep("Step 3", "Send RID 0xC012 StartRoutine in Programming Session");
 
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC012, routineData, 0, response, elcount(response));
-
-  if (respLen > 0)
-  {
-    if (response[0] == 0x71 && response[1] == 0x01 && response[2] == 0xC0 && response[3] == 0x12)
-    {
-      testStepPass("Result 3", "Positive response received for RID 0xC012 (71 01 C0 12), len=%d", respLen);
-    }
-    else
-    {
-      testStepFail("Result 3", "Response mismatch: 0x%02X 0x%02X 0x%02X 0x%02X (expected 71 01 C0 12)",
-        response[0], response[1], response[2], response[3]);
-    }
-  }
-  else if (respLen <= -256)
-  {
-    receivedNRC = (-respLen) - 256;
-    testStepFail("Result 3", "Negative response received, NRC=0x%02X", receivedNRC);
-  }
-  else
-  {
-    testStepFail("Result 3", "SendRoutineControl RID 0xC012 failed, rc=%d", respLen);
-  }
-
-  testWaitForTimeout(500);
-
-  /*======================================================
-    STEP 4
-    Enter Programming Session 0x02
-  ======================================================*/
-  testStep("Step 4", "Enter Programming Session 0x02");
-
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 4", "Failed to enter Extended Session before Programming Session");
-    return;
-  }
-
-  rc = SetProgrammingDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 4", "Failed to enter Programming Session 0x02");
-    return;
-  }
-  else
-  {
-    testStepPass("Result 4", "Entered Programming Session 0x02");
-  }
-
-  testWaitForTimeout(500);
-
-  /*======================================================
-    STEP 5
-    Send RID 0xC012 StartRoutine in Programming Session
-    Expected: Negative response received with NRC 0x31
-  ======================================================*/
-  testStep("Step 5", "Send RID 0xC012 StartRoutine (31 01 C0 12) in Programming Session");
-
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC012, routineData, 0, response, elcount(response));
+  respLen = SendRoutineControl(wreq, wresp, 0x01, 0xC012, routineData, 1, response, elcount(response));
 
   if (respLen <= -256)
   {
     receivedNRC = (-respLen) - 256;
     if (receivedNRC == 0x31)
-    {
-      testStepPass("Result 5", "NRC 0x31 received as expected in Programming Session");
-    }
+      testStepPass("Result 3", "NRC 0x31 received as expected in Programming Session");
     else
-    {
-      testStepFail("Result 5", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
-    }
+      testStepFail("Result 3", "Unexpected NRC 0x%02X (expected 0x31)", receivedNRC);
+  }
+  else if (respLen > 0)
+    testStepFail("Result 3", "Unexpected positive response in Programming Session");
+  else
+    testStepFail("Result 3", "SendRoutineControl failed, rc=%d", respLen);
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 4
+    Enter Extended Session 0x03
+    Expected: positive (50 03)
+  ======================================================*/
+  testStep("Step 4", "Enter Extended Diagnostics Session 0x03");
+
+  /* Return to Default first to recover from Programming */
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 4", "Failed to return to Default, rc=%d", rc); return; }
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 4", "Failed to enter Extended Session, rc=%d", rc); return; }
+  testStepPass("Result 4", "Extended Session 0x03 entered");
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 5
+    Read DID 0x0330 (E2E-protected)
+    Expected: positive response, store value
+  ======================================================*/
+  testStep("Step 5", "Send reading request for DID 0x0330 (E2E protected)");
+
+  step5ReadLen = ReadDid_PD(0x0330, readBuf, elcount(readBuf));
+
+  if (step5ReadLen > 0)
+    testStepPass("Result 5", "DID 0x0330 read OK, value=0x%02X, len=%d", readBuf[0], step5ReadLen);
+  else if (step5ReadLen <= -256)
+  {
+    receivedNRC = (-step5ReadLen) - 256;
+    testStepFail("Result 5", "DID 0x0330 read NRC=0x%02X", receivedNRC);
   }
   else
+    testStepFail("Result 5", "DID 0x0330 read failed, rc=%d", step5ReadLen);
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 6
+    Activate E2E secured transfer for DID 0x0330 via C011
+    (C008 challenge -> backend -> C011 token with payload 0x3C)
+    Expected: 71 01 C0 11 24 00
+  ======================================================*/
+  testStep("Step 6", "Activate E2E secured transfer ($C011) for DID 0x0330 with payload 0x3C");
+
+  didPayload[0] = 0x3C;
+  rc = EEUnlockAndWriteDid_PD(0x0330, wreq, wresp, didPayload, 1);
+
+  if (rc == 0)
+    testStepPass("Result 6", "E2E unlock, write and C012 commit successful (C011->WriteDID->C012)");
+  else
+    testStepFail("Result 6", "EEUnlockAndWriteDid_PD failed, rc=%d", rc);
+
+  /* EEUnlockAndWriteDid_PD already sent C012 internally — steps 7+8 are covered by it.
+     We verify the C012 commit response via the sysvar set by SendEECommitRequest. */
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 7  (WriteDID 0x0330 = 0x3C, compliant)
+    STEP 8  (C012 subfunction 01 -> 71 01 C0 12 24 00)
+    NOTE: Both steps 7 and 8 are executed inside EEUnlockAndWriteDid_PD above.
+          We explicitly verify the C012 result byte stored in sysvar.
+  ======================================================*/
+  testStep("Step 7+8", "Write DID 0x0330=0x3C (compliant) and C012 commit (sf=01)");
+
+  if (@sysvar::General::C012_nrc == 0x00)
+    testStepPass("Result 7+8", "C012 commit response byte[5]=0x00 -> 24 00 as expected");
+  else
+    testStepFail("Result 7+8", "C012 commit response byte[5]=0x%02X (expected 0x00)",
+                 @sysvar::General::C012_nrc);
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 9
+    Read DID 0x0330 — expect same payload as written in step 7
+    Expected: 0x3C
+  ======================================================*/
+  testStep("Step 9", "Read DID 0x0330 — expect same payload as written in step 7 (0x3C)");
+
+  step5ReadLen = ReadDid_PD(0x0330, readBuf, elcount(readBuf));
+
+  if (step5ReadLen > 0)
   {
-    testStepFail("Result 5", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
+    if (readBuf[0] == 0x3C)
+      testStepPass("Result 9", "DID 0x0330 = 0x3C, matches written payload");
+    else
+      testStepFail("Result 9", "DID 0x0330 = 0x%02X, expected 0x3C", readBuf[0]);
   }
+  else if (step5ReadLen <= -256)
+  {
+    receivedNRC = (-step5ReadLen) - 256;
+    testStepFail("Result 9", "DID 0x0330 read NRC=0x%02X", receivedNRC);
+  }
+  else
+    testStepFail("Result 9", "DID 0x0330 read failed, rc=%d", step5ReadLen);
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 10
+    Repeat C011 for DID 0x0330 with different (non-compliant) payload 0x2C
+    Expected: C011 positive (any), write succeeds, C012 -> 71 01 C0 12 14 02
+  ======================================================*/
+  testStep("Step 10+11+12", "Repeat $C011 with non-compliant payload 0x2C, Write DID, C012 commit (sf=01)");
+
+  didPayload[0] = 0x2C;
+  rc = EEUnlockAndWriteDid_PD(0x0330, wreq, wresp, didPayload, 1);
+
+  /* rc may be non-zero here if C012 returns 14 02 (which SendEECommitRequest treats as -3).
+     We check C012_nrc sysvar directly. */
+  testStepPass("Result 10", "C011 activation for non-compliant payload complete (rc=%d)", rc);
+  testWaitForTimeout(500);
+
+  testStep("Step 12 check", "C012 subfunction 01 after non-compliant write -> expect 71 01 C0 12 14 02");
+  if (@sysvar::General::C012_nrc == 0x02)
+    testStepPass("Result 12", "C012 response byte[5]=0x02 -> 14 02 as expected");
+  else
+    testStepFail("Result 12", "C012 response byte[5]=0x%02X (expected 0x02)",
+                 @sysvar::General::C012_nrc);
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 13
+    Read DID 0x0330 — value should be same as step 9 (non-compliant write rejected)
+    Expected: 0x3C (unchanged)
+  ======================================================*/
+  testStep("Step 13", "Read DID 0x0330 — expect value unchanged from step 9 (0x3C)");
+
+  step5ReadLen = ReadDid_PD(0x0330, readBuf, elcount(readBuf));
+
+  if (step5ReadLen > 0)
+  {
+    if (readBuf[0] == 0x3C)
+      testStepPass("Result 13", "DID 0x0330 = 0x3C (unchanged, non-compliant write rejected)");
+    else
+      testStepFail("Result 13", "DID 0x0330 = 0x%02X, expected 0x3C (unchanged)", readBuf[0]);
+  }
+  else if (step5ReadLen <= -256)
+  {
+    receivedNRC = (-step5ReadLen) - 256;
+    testStepFail("Result 13", "DID 0x0330 read NRC=0x%02X", receivedNRC);
+  }
+  else
+    testStepFail("Result 13", "DID 0x0330 read failed, rc=%d", step5ReadLen);
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 14
+    Repeat C011 for DID 0x0330 with compliant payload 0x3C
+    Expected: 71 01 C0 11 24 00
+  ======================================================*/
+  /*======================================================
+    STEP 15
+    Write DID 0x0330 = 0x3C (compliant)
+    Expected: positive (6E 03 30)
+  ======================================================*/
+  testStep("Step 14+15", "Repeat $C011 (compliant payload 0x3C) and Write DID 0x0330 = 0x3C");
+
+  didPayload[0] = 0x3C;
+  rc = EEUnlockAndWriteDid_PD(0x0330, wreq, wresp, didPayload, 1);
+
+  if (rc == 0)
+    testStepPass("Result 14+15", "E2E unlock and compliant write successful");
+  else
+    testStepFail("Result 14+15", "EEUnlockAndWriteDid_PD failed, rc=%d", rc);
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 16
+    C012 subfunction 02 (finalise)
+    Expected: 71 01 C0 12 24 01
+  ======================================================*/
+  testStep("Step 16", "Send RID 0xC012 StartRoutine subfunction 02 (finalise)");
+
+  routineData[0] = 0x02;
+  respLen = SendRoutineControl(reqC012, respC012, 0x01, 0xC012, routineData, 1, response, elcount(response));
+
+  if (respLen > 0)
+  {
+    if (response[0] == 0x71 && response[1] == 0x01 &&
+        response[2] == 0xC0 && response[3] == 0x12 && response[5] == 0x01)
+      testStepPass("Result 16", "C012 sf=02 positive: 71 01 C0 12 24 01");
+    else
+      testStepFail("Result 16", "C012 sf=02 unexpected response: %02X %02X %02X %02X %02X %02X",
+                   response[0], response[1], response[2], response[3], response[4], response[5]);
+  }
+  else if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    testStepFail("Result 16", "C012 sf=02 NRC=0x%02X", receivedNRC);
+  }
+  else
+    testStepFail("Result 16", "C012 sf=02 failed, rc=%d", respLen);
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 17
+    Read DID 0x0330 — expect same payload as step 15 (0x3C)
+  ======================================================*/
+  testStep("Step 17", "Read DID 0x0330 — expect same payload as step 15 (0x3C)");
+
+  step5ReadLen = ReadDid_PD(0x0330, readBuf, elcount(readBuf));
+
+  if (step5ReadLen > 0)
+  {
+    if (readBuf[0] == 0x3C)
+      testStepPass("Result 17", "DID 0x0330 = 0x3C, matches compliant payload from step 15");
+    else
+      testStepFail("Result 17", "DID 0x0330 = 0x%02X, expected 0x3C", readBuf[0]);
+  }
+  else if (step5ReadLen <= -256)
+  {
+    receivedNRC = (-step5ReadLen) - 256;
+    testStepFail("Result 17", "DID 0x0330 read NRC=0x%02X", receivedNRC);
+  }
+  else
+    testStepFail("Result 17", "DID 0x0330 read failed, rc=%d", step5ReadLen);
+
+  testWaitForTimeout(1000);
 
   /*==========================================================
     POST-CONDITIONS
   ==========================================================*/
-  testWaitForTimeout(1000);
-
   testStepPass("Postcondition", "none");
-
   write("=== TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD END ===");
 }
 
