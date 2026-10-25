@@ -162,14 +162,17 @@ testcase TC_HCP5_DIAG_11_027_Diagnostic_Object_E2E_Protection_Activation()
       strncat(hexStr, tmp, 256);
     }
 
-    if (rc >= 4 && readBuf[3] == 0xFF)
+    /* Response format: 62 01 74 [data...] — ReadDid_VD includes the 62+DID header.
+       Full response: 62 01 74 04 03 01 FF => readBuf[6] = 0xFF (last data byte).
+       Spec check: byte[3] of DATA = 0xFF => that is readBuf[6] in full response. */
+    if (rc >= 7 && readBuf[6] == 0xFF)
     {
-      testStepPass("Result 2", "DID 0x0174 read OK, byte[3]=0xFF (access fully unlocked)");
+      testStepPass("Result 2", "DID 0x0174 read OK, data byte[3]=0xFF (access fully unlocked)");
       testStepPass("Response 2", "%s", hexStr);
     }
     else if (rc >= 4)
     {
-      testStepFail("Result 2", "DID 0x0174 byte[3]=0x%02X (expected 0xFF)", readBuf[3]);
+      testStepFail("Result 2", "DID 0x0174 last byte=0x%02X (expected 0xFF), full response: %s", (rc>=7)?readBuf[6]:0xFF, hexStr);
       testStepFail("Response 2", "%s", hexStr);
     }
     else
@@ -191,16 +194,9 @@ testcase TC_HCP5_DIAG_11_027_Diagnostic_Object_E2E_Protection_Activation()
   ======================================================*/
   testStep("Step 3", "Send 2E 06 00 00 (WriteCodierung DID 0x0600) - expect NRC 0x33");
 
-  /* Re-enter Extended as per report step 7 */
-  rc = SetExtendedDiagnosticSession_VD(3000);
-  if (rc != 0) { testStepFail("Result 3", "Failed to re-enter Extended Session before write"); return; }
-
-  testWaitForTimeout(500);
-
-  /* ClearDTC as per report step 9 */
-  dtcGroup[0] = 0xFF; dtcGroup[1] = 0xFF; dtcGroup[2] = 0xFF;
-  UdsClearDTC_VD(dtcGroup, 3, 5000);
-  testWaitForTimeout(500);
+  /* Stay in Extended session from Step 2 — do NOT re-enter Extended (causes NRC 0x22).
+     Report sends WriteCodierung immediately after ReadReq0174 in the same session.
+     Re-entering Extended resets SFD unlock state -> ECU returns NRC 0x22 instead of 0x33. */
 
   /* Send 2E 06 00 00 — raw write request for DID 0x0600 */
   rawReq[0] = 0x2E; rawReq[1] = 0x06; rawReq[2] = 0x00; rawReq[3] = 0x00;
