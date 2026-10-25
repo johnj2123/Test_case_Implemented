@@ -1,0 +1,2377 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD</title>
+    <style type="text/css">
+      
+       
+      
+      @media screen
+      {
+        body
+        {
+          background-color: rgb(255, 255, 255);
+          font-family:      arial, verdana, trebuchet, officina, sans-serif;
+        }
+      }
+  
+      
+      @media print
+      {
+        
+        body
+        {
+          background-color: rgb(255, 255, 255);
+          font-family:      arial, verdana, trebuchet, officina, sans-serif;
+        }
+        
+        
+        a
+        {
+          text-decoration: none;
+        }
+        
+        
+        .HeadingTable, .SubHeadingTable, .GroupHeadingTable , .GroupEndTable
+        {
+          border-width: 2px;
+          border-style: solid;
+          border-color: rgb(150,150,150);
+        }
+        
+        .ResultBlockHeading
+        {
+          border-width: 1px;
+          border-style: solid;
+          border-color: rgb(150,150,150);
+        }
+        
+        table.ResultTable, table.OverviewTable, table.CheckStatisticsTable
+        {
+          border-collapse: collapse;
+        }
+        
+        td.DefaultCell, td.DefineCell, td.NumberCell, td.NumberCellPositiveResult, td.NumberCellNegativeResult, 
+        td.NumberCellErrorResult, td.NumberCellInconclusiveResult, td.NumberCellNoneResult, td.NumberCellNoColor,
+        td.PositiveResultCell, td.NegativeResultCell, td.WarningCell, td.NoneResultCell, td.InconclusiveResultCell,
+        td.ErrorResultCell, th.TableHeadingCell
+        {
+          border-width: 1px;
+          border-style: solid;
+          border-color: rgb(150,150,150);
+        }
+        
+        .PatternSeparator
+        {
+          
+          border-style: none;
+        }
+        
+        .PositiveResult
+        {
+          
+          border-bottom: 2px solid;
+        }
+        
+        .NegativeResult
+        {
+          
+          border-bottom: 2px solid;
+        }
+        
+        .NoneResult
+        {
+          
+          border-bottom: 2px solid;
+        }
+        
+        .InconclusiveResult
+        {
+          
+          border-bottom: 2px solid;
+        }
+        
+        .ErrorResult
+        {
+          
+          border-bottom: 2px solid;
+        }
+
+        
+        .TestcaseHeadingDefaultResult
+        {
+          
+          border-bottom: 2px solid;
+        }
+        
+        .TestcaseHeadingPositiveResult
+        {
+          
+          border-bottom: 2px solid;
+        }
+        
+        .TestcaseHeadingNegativeResult
+        {
+          
+          border-bottom: 2px solid;
+        }
+        
+        table.ScreenOnly, a.Undecorated, .LinkCell
+        {
+          display: none;
+        }
+      }
+      
+      a.Undecorated:hover 
+      {
+        color:red;
+      }
+      a.Undecorated
+      { 
+        text-decoration: none; 
+      }
+      
+      .NavStyle
+      {
+        background-color: rgb(220, 221, 222);
+      }
+      
+      td.LinkCell, td.UpCell
+      {
+        
+        width:              1px;
+        white-space:        nowrap;
+      }
+
+      
+      table
+      {
+        margin-bottom:    10px;
+        vertical-align:   top; 
+        border:           0;
+        border-spacing:   1px;
+        padding:          2px;
+      }
+      table.ScreenOnly
+      {
+        vertical-align: top; 
+        margin-bottom:  10px;
+      }
+      .NoMarginBottom
+      {
+        margin-bottom:    0px;
+      }
+      .HeadingTable
+      {
+        width:            100%;
+        text-align:       center;
+        margin-top:       15px;
+        margin-bottom:    30px;
+        margin-left:      auto;
+        margin-right:     auto;
+        background-color: rgb(220, 221, 222);
+      }
+      
+      .SubHeadingTable
+      {
+        width:            100%;
+        text-align:       center;
+        margin-top:       15px;
+        margin-bottom:    25px;
+        background-color: rgb(220, 221, 222);
+      }
+      
+      .GroupHeadingTable, .GroupEndTable
+      {
+        width:            100%;
+        text-align:       center;
+        margin-top:       15px;
+        padding-right:    20px;
+        background-color: rgb(220, 221, 222);
+      }
+      
+      .DefaultTable
+      {
+        padding:        0px;
+        border-spacing: 0px;
+      }
+      
+      .CheckStatisticsTable
+      {
+        margin-bottom: 8px;
+        padding-right:  20px;
+      }
+  
+      .OverviewTable
+      {
+        text-align:     left;
+      }
+      
+      .OverviewResultTable
+      {
+        width:          100%;
+        margin-bottom:  0px;
+        border-spacing: 0px;
+        padding:        0px;
+        text-align:     center;
+      }
+      
+      .ResultTable
+      {
+        width:          100%;
+        text-align:     left;
+        padding-right:  20px;
+      }
+      
+      .ResultTableInner
+      {
+        width:          100%;
+        text-align:     left;
+        padding-right:  0px;
+      }
+  
+      table.ResultTable td, table.ChildLinkTable td
+      {
+        vertical-align: top;
+      }
+      .ChildLinkTable
+      {
+        width:          1px;
+        text-align:     left;
+      }
+      .InfoTable
+      {
+        text-align:     left;
+        padding-right:  0px;
+        margin-bottom:  0px;
+        border-spacing: 0px;
+      }
+      .InfoTableExpand
+      {
+        width:          100%;
+        text-align:     left;
+        padding-right:  0px;
+        margin-bottom:  0px;
+        border-spacing: 0px;
+      }
+      .OverallResultTable
+      {
+        width:         50%;
+        text-align:    center;
+        margin-bottom: 20px;
+        margin-left:   auto;
+        margin-right:  auto;
+        font-weight:   bold;
+      }
+      
+      .TableHeadingCell
+      {
+        background-color: rgb(179, 179, 179);
+        font-family:      arial, verdana, trebuchet, officina, sans-serif;
+        font-weight:      bold;
+        text-align:       center;
+      }
+  
+      .CellNoColor
+      {
+        text-align:     left;
+        vertical-align: top;
+      }   
+      
+      .DefineCell
+      {
+        background-color: rgb(179, 179, 179);
+        text-align:       left;
+      }
+      
+      .DefaultCell, .DefaultCellBold
+      {
+        background-color: rgb(229, 229, 229);
+        text-align:       left;
+      }
+      
+      .DefaultCellBold
+      {
+        font-weight:      bold;
+      }
+        
+      .NumberCell
+      {
+        background-color: rgb(229, 229, 229);
+        text-align:       center;
+        min-width:        50px;
+      }
+      
+      .NumberCellNegativeResult
+      {
+        background-color: rgb(240, 0, 0);
+        text-align:       center;
+        min-width:        50px;
+      }
+      
+      .NumberCellPositiveResult
+      {
+        background-color: rgb(25, 165, 88);
+        text-align:       center;
+        min-width:        50px;
+      }
+      
+      .NumberCellNoneResult
+      {
+        background-color: rgb(105, 105, 105);
+        text-align:       center;
+        min-width:        50px;
+      }
+      
+      .NumberCellInconclusiveResult
+      {
+        background-color: rgb(255, 165, 0);
+        text-align:       center;
+        min-width:        50px;
+      }
+      
+      .NumberCellErrorResult
+      {
+        background-color: rgb(205, 0, 0);
+        text-align:       center;
+        min-width:        50px;
+      }
+      
+      .NumberCellNoColor
+      {        
+        text-align: center;
+      }
+      
+      .PositiveResultCell
+      {
+        background-color: rgb(25, 165, 88);
+      }
+    
+      .NegativeResultCell
+      {
+        background-color: rgb(240, 0, 0);
+      }
+      
+      .NoneResultCell
+      {
+        background-color: rgb(105, 105, 105);
+      }
+      
+      .InconclusiveResultCell
+      {
+        background-color: rgb(255, 165, 0);
+      }
+      
+      .ErrorResultCell
+      {
+        background-color: rgb(205, 0, 0);
+        white-space:        nowrap;
+      }
+
+      .WarningCell
+      {
+        background-color: rgb(255, 255, 0);
+      }
+
+      .TestcaseHeadingDefaultResult
+      {
+        background-color: rgb(179, 179, 179);
+      }
+      .TestcaseHeadingPositiveResult
+      {
+        background-color: rgb(25, 165, 88);
+      }      
+      .TestcaseHeadingNegativeResult
+      {
+        background-color: rgb(240, 0, 0);
+      }      
+      .TestcaseHeadingNoneResult
+      {
+        background-color: rgb(105, 105, 105);
+      }
+      .TestcaseHeadingInconclusiveResult
+      {
+        background-color: rgb(255, 165, 0);
+      }
+      .TestcaseHeadingErrorResult
+      {
+        background-color: rgb(205, 0, 0);
+      }
+      
+      .PatternSeparator
+      {
+        height: 0.2em;
+      }
+      
+      .NegativeResult
+      {
+        background-color: rgb(240, 0, 0);
+        text-align:       center;
+        font-weight:      bold;
+      }
+      .PositiveResult
+      {
+        background-color: rgb(25, 165, 88);
+        text-align:       center;
+        font-weight:      bold;
+      }
+      .NoneResult
+      {
+        background-color: rgb(105, 105, 105);
+        text-align:       center;
+        font-weight:      bold;
+      }
+      .InconclusiveResult
+      {
+        background-color: rgb(255, 165, 0);
+        text-align:       center;
+        font-weight:      bold;
+      }
+      .ErrorResult
+      {
+        background-color: rgb(205, 0, 0);
+        text-align:       center;
+        font-weight:      bold;
+      }
+      
+      
+      
+      .Heading1
+      {
+        font-family: arial, sans-serif;
+        font-weight: bold;
+        font-size:   26px;
+      }
+      
+      .Heading2
+      {
+        font-family: arial, sans-serif;
+        font-weight: bold;
+        font-size:   20px;
+      }
+      
+      .Heading3
+      {
+        font-family:   arial, sans-serif;
+        font-weight:   bold;
+        font-size:     18px;
+        margin-bottom: 20px;
+        margin-top:    20px;
+      }
+      
+      .Heading4
+      {
+        font-family:   arial, sans-serif;
+        font-weight:   bold;
+        font-size:     16px;
+        margin-top:    10px;
+        margin-bottom: 10px;
+      }
+      
+      
+      img
+      {
+        Margin-bottom: 10px;
+        Margin-right:  10px;
+      }
+      
+      
+      p
+      {
+        Margin-bottom: 20px;
+      }
+      
+      
+      .DefaultTableBackground
+      {
+        background-color: rgb(229, 229, 229);
+        border-spacing:   0px;
+        padding:          0px;
+      }
+      
+      .NegativeResultBackground
+      {
+        background-color: rgb(240, 0, 0);
+        border-spacing:   0px;
+        padding:          0px;
+      }
+      
+      .PositiveResultBackground
+      {
+        background-color: rgb(25, 165, 88);
+        border-spacing:   0px;
+        padding:          0px;
+      }
+      
+      .WarningResultBackground
+      {
+        background-color: rgb(255, 255, 0);
+        border-spacing:   0px;
+        padding:          0px;
+      }
+      
+      .NoneResultBackground
+      {
+        background-color: rgb(105, 105, 105);
+        border-spacing:   0px;
+        padding:          0px;
+      }
+      
+      .InconclusiveResultBackground
+      {
+        background-color: rgb(255, 165, 0);
+        border-spacing:   0px;
+        padding:          0px;
+      }
+      
+      .ErrorResultBackground
+      {
+        background-color: rgb(205, 0, 0);
+        border-spacing:   0px;
+        padding:          0px;
+      }
+      
+      .TestGroupHeadingBackground
+      {
+        background-color: rgb(179, 179, 179);
+      }
+    
+      
+      .Indentation
+      {
+        margin-left:  20px;
+      }
+    </style>
+    <script type="text/javascript">
+      var EXPANDED = '[−]';
+      var COLLAPSED = '[+]';
+      var VISIBLE = 'Visible';
+      var HIDDEN = 'Hidden';
+      var NONE = 'none';
+      var BLOCK = '';
+      function getDivId(id) { return 'div_' + id; }
+      function getLinkId(id) { return 'lnk_' + id; }
+      function getTableId(id) { return 'tbl_' + id; }
+      function getTbl2Id(id) { return 'tbl_t' + id; }
+      
+      
+      function switchText(oldText) { return oldText == COLLAPSED ? EXPANDED : COLLAPSED ; }
+      function getStyleFromText(linkText) { return linkText == COLLAPSED ? HIDDEN : VISIBLE; }
+      
+      function getElements(tagName, elementId)
+      {
+        this.elements = [];
+        var index = 0;
+        var elm = document.getElementsByTagName(tagName);
+        var len = elm.length;
+        for (var i = 0; i < len; i++) 
+        {
+          var id = elm[i].id;
+          if (id && id.indexOf(elementId) == 0)
+          {
+            this.elements[index] = elm[i];
+            index++;
+          }
+        }
+        return this.elements;
+      }
+      function matchElements(tagName, matchId)
+      {
+        this.elements = [];
+        var index = 0;
+        var elm = document.getElementsByTagName(tagName);
+        for (var i = 0; i < elm.length; i++) 
+        {
+          var id = elm[i].id;
+          var tc = id.replace(/s[0-9]+\./, "");
+          if (tc && tc == matchId)
+          {
+            this.elements[index] = elm[i];
+            index++;
+          }
+        }
+        return this.elements;  
+      }
+      function onoff(elm, style)
+      {
+        if(elm.style.display == NONE)
+        {
+          if(style == null || style == VISIBLE)
+            elm.style.display = BLOCK;
+        }
+        else
+        {
+          if(style == null || style == HIDDEN)
+            elm.style.display = NONE;
+        }
+      }
+      function switchTagStyle(tag, id, style)
+      {
+        var divs = getElements(tag, id);
+        for(var i = 0; i < divs.length; i++)
+          onoff(divs[i], style);
+      }
+      function switchRowStyle(tbl, style)
+      {
+        var rows = tbl.rows.length;
+        for(var rowIndex=0; rowIndex < rows; rowIndex++)
+        {
+          var row = tbl.rows[rowIndex];
+          if (row.id != "on")
+            onoff(row, style);
+        }
+      }
+      function switchTableRowStyle(tableId, style)
+      {
+        var tables = getElements('table', tableId);
+        for(var i = 0; i < tables.length; i++)
+          switchRowStyle(tables[i], style);
+      }
+      function switchLinkText(linkId, newText)
+      {
+        var link = getElements('a', linkId);
+        var len = link.length;
+        for(var i = 0; i < len; i++)
+        {
+          var lnk = link[i];
+          if(newText == null)
+          {
+            var oldText = lnk.text;
+            newText = switchText(oldText)
+          }
+          lnk.text = newText;
+        }
+      }
+      function switchTag(tag, id, text)
+      {
+        var style = getStyleFromText(text);
+        switchTagStyle(tag, id, style);
+      }
+      function switchTable(id)
+      {
+        switchLinkText(getTableId(id));
+        switchTableRowStyle(getTableId(id));
+      }
+      function switchDiv(id, linkText)
+      {
+        var text = switchText(linkText);
+        switchLinkText(getLinkId(id), text);
+        switchTag('div', getDivId(id), text);
+      }      
+      function switchAll(id, linkText)
+      {
+        var text = switchText(linkText);
+        switchLinkText(getLinkId(id), text);
+        switchTag('div', getDivId(id), text);
+        var style = getStyleFromText(text);
+        switchTableRowStyle(getTbl2Id(id), style);
+      }
+      function showTable(id)
+      {
+        var tableId = getTableId(id);
+        switchLinkText(tableId, EXPANDED);
+        switchTableRowStyle(tableId, VISIBLE);
+      }
+      function hideTable(id)
+      {
+        var tableId = getTableId(id);
+        switchTableRowStyle(tableId, HIDDEN);
+        switchLinkText(tableId, COLLAPSED);
+      }
+      function showDiv(id)
+      {
+        switchLinkText(getLinkId(id), EXPANDED);
+        switchTag('div', getDivId(id), EXPANDED);
+      }
+      function showTC(id)
+      {
+        var divId = getDivId(id);
+        var elms = matchElements('div', divId); 
+        if(elms != null && elms.length > 0)
+        {
+          id = elms[0].id.replace(getDivId(''), '');
+          showDiv(id);
+        }
+      }
+      
+    </script>
+  </head>
+  <body>
+    <a name="TOP"></a>
+    <table class="HeadingTable">
+      <tr>
+        <td>
+          <big class="Heading1">Report: TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD</big>
+        </td>
+      </tr>
+    </table>
+    <center>
+      <table class="OverallResultTable">
+        <tr>
+          <td class="NegativeResult">Test failed</td>
+        </tr>
+      </table>
+    </center>
+    <a name="GeneralTestInfo"></a>
+    <table class="SubHeadingTable">
+      <tr>
+        <td>
+          <div class="Heading2">General Test Information</div>
+        </td>
+      </tr>
+    </table>
+    <div class="Indentation">
+      <div class="Heading4">Test Engineer</div>
+      <div class="Indentation">
+        <table>
+          <tr>
+            <td class="CellNoColor">Windows Login Name: </td>
+            <td class="CellNoColor">BSWVTHCP5</td>
+          </tr>
+        </table>
+      </div>
+      <div class="Heading4">Test Setup</div>
+      <div class="Indentation">
+        <table>
+          <tr>
+            <td class="CellNoColor">Version: </td>
+            <td class="CellNoColor">CANoe.CAN.LIN.Ethernet /pro 16.8.6 (SP8)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Configuration: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\HCP5_V12.10.00_RBS_DIAG.cfg</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database FaultInjectionUnit-V2: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\CustomNodes\FIU\FaultInjectionUnit-V2.dbc (2026-10-17 07:00:19)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database HCP3_CANFD01: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_HCP3_CANFD.arxml (2026-10-17 07:00:36)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database HCP5_CANFD02: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CANFD02.arxml (2026-10-17 07:00:21)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database HCP5_CANFD05: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CANFD05.arxml (2026-10-17 07:00:22)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database HCP5_CANFD06: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CANFD06.arxml (2026-10-17 07:00:23)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CONMOD_ETH.arxml (2026-10-17 07:00:23)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_HCP2_1_ETH.arxml (2026-10-17 07:00:26)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_HCP3_ETH.arxml (2026-10-17 07:00:28)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_MFK_ETH.arxml (2026-10-17 07:00:31)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_MIK_ETH.arxml (2026-10-17 07:00:32)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_SACID_1_ETH.arxml (2026-10-17 07:00:32)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_zDML_ETH.arxml (2026-10-17 07:00:33)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database WU_ConMod_CANFD: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_CONMOD_CANFD.arxml (2026-10-17 07:00:34)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database WU_HCP2_CANFD: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_HCP2_CANFD.arxml (2026-10-17 07:00:36)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database WU_HCP4_CANFD: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_HCP4_CANFD.arxml (2026-10-17 07:00:37)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database DiagCAN on HCP5_DiagCAN: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\DIAGCAN_Developing_messages.arxml (2026-10-17 07:00:19)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database HCP1_CANFD01 on WU_HCP1_CANFD: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_HCP1_CANFD.arxml (2026-10-17 07:00:35)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database HCP5_CAN03 on HCP5_CAN03: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CAN03.arxml (2026-10-17 07:00:20)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database HCP5_CANFD01 on HCP5_CANFD01: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CANFD01.arxml (2026-10-17 07:00:21)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database HCP5_GW_IsoTp on HCP5_DiagCAN: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\CustomNodes\IsoTp_Tester\HCP5_GW_IsoTp.dbc (2026-10-17 07:00:19)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database LV_EnVarGlobal on HCP5_DiagCAN: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\CustomNodes\KlemmeSim\LV_EnVarGlobal.dbc (2026-10-17 07:00:19)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database WU_PASD_CANFD on WU_PASD_CANFD: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_PASD_CANFD.arxml (2026-10-17 07:00:37)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database E3_1_2_Premium_HCP5_LIN01_KMatrix_Master_HCP5_P2_OBD_Safety_SignalSuffix_V12.10.22.02A_20250909_BAm_P01 on LIN01: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_HCP5_LIN01_KMatrix_Master_HCP5_P2_OBD_Safety_SignalSuffix_V12.10.22.02A_20250909_BAm_P01.ldf (2026-10-17 07:00:19)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database E3_1_2_Premium_HCP5_LIN02_KMatrix_Master_HCP5_P2_OBD_Safety_SignalSuffix_V12.10.22.02A_20250909_BAm_P01 on LIN02: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_HCP5_LIN02_KMatrix_Master_HCP5_P2_OBD_Safety_SignalSuffix_V12.10.22.02A_20250909_BAm_P01.ldf (2026-10-17 07:00:19)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database E3_1_2_Premium_HCP5_LIN03_KMatrix_SignalSuffix_V12.10.22.02A_20250909_BAm_P01 on LIN03: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_HCP5_LIN03_KMatrix_SignalSuffix_V12.10.22.02A_20250909_BAm_P01.ldf (2026-10-17 07:00:19)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2 on HCP5_MRR_ETH: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_MRR_ETH.arxml (2026-10-17 07:00:32)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2 on HCP5_HCP1_ETH: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_HCP1_ETH.arxml (2026-10-17 07:00:25)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2 on HCP5_HCP4_ETH: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_HCP4_ETH.arxml (2026-10-17 07:00:30)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2 on HCP5_PASD_ETH: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_PASD_ETH.arxml (2026-10-17 07:00:32)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Database ETH_Cluster_E3_1_2 on HCP5_XVIEW_ETH: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_XVIEW_ETH.arxml (2026-10-17 07:00:32)</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Diagnostic Description of HCP5_Diag_PD: </td>
+            <td class="CellNoColor">Basic Diagnostic Description</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Diagnostic Description of HCP5_Diag_VD: </td>
+            <td class="CellNoColor">Basic Diagnostic Description</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Diagnostic Description of HCP5_Diagnostics_DoIP_Funtional_VD: </td>
+            <td class="CellNoColor">Basic Diagnostic Description</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Diagnostic Description of HCP5_Diagnostics_DoIP_PD: </td>
+            <td class="CellNoColor">Basic Diagnostic Description</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Diagnostic Description of HCP5_Diagnostics_DoIP_VD: </td>
+            <td class="CellNoColor">Basic Diagnostic Description</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Test Module Name: </td>
+            <td class="CellNoColor">TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Test Module File: </td>
+            <td class="CellNoColor">D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\CAPL\Test Cases\TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD.can</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Last modification of Test Module File: </td>
+            <td class="CellNoColor">2026-10-25, 11:46:44</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Windows Computer Name: </td>
+            <td class="CellNoColor">GPW-29</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Nodelayer Module AsrPDUIL: </td>
+            <td class="CellNoColor">CANoe AutoSAR PDU Interaction Layer NL (General OEM) Version 1.85.75 (Apr 12 2022 19:27:10) , c:\CANrtk\Exec32\SynchronizedFiles\AsrPDUIL.dll</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Nodelayer Module AsrNM33: </td>
+            <td class="CellNoColor">AsrNM (Version 3.3.77 Windows 32-Bit), c:\CANrtk\Exec32\SynchronizedFiles\AsrNM33.dll</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Nodelayer Module CANoeILNLVector: </td>
+            <td class="CellNoColor">CANoe Interaction Layer NL (Vector) Version 3.30.102 (Nov  4 2021 07:26:28) , c:\CANrtk\Exec32\SynchronizedFiles\CANoeILNLVector.dll</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Nodelayer Module DoIP: </td>
+            <td class="CellNoColor">6.3.7.3, </td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Nodelayer Module Ethernet_IL: </td>
+            <td class="CellNoColor">Ethernet Interaction Layer for CANoe, Version 16.3.110, c:\CANrtk\Exec32\SynchronizedFiles\Ethernet_IL.dll</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Nodelayer Module SomeIP_IL: </td>
+            <td class="CellNoColor">SOME/IP Interaction Layer for CANoe, Version 16.3.110, c:\CANrtk\Exec32\SynchronizedFiles\SomeIP_IL.dll</td>
+          </tr>
+          <tr>
+            <td class="CellNoColor">Nodelayer Module CANoeILNL_AUTOSAR_Eth: </td>
+            <td class="CellNoColor">AUTOSAR Interaction Layer for CANoe, Version 16.3.110, c:\CANrtk\Exec32\SynchronizedFiles\CANoeILNL_AUTOSAR_Eth.dll</td>
+          </tr>
+        </table>
+      </div>
+      <div class="Heading4">Hardware</div>
+      <div class="Indentation">
+        <div class="Heading4">CAN Channel Interfaces</div>
+        <div class="Indentation">
+          <table>
+            <tr>
+              <th class="TableHeadingCell">Channel</th>
+              <th class="TableHeadingCell">Device</th>
+              <th class="TableHeadingCell">Serial number</th>
+              <th class="TableHeadingCell">Driver DLL version</th>
+              <th class="TableHeadingCell">Driver version</th>
+            </tr>
+            <tr>
+              <td class="NumberCell">1</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5321</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">2</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5321</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">3</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5321</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">4</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5321</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">5</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5321</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">6</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5336</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">7</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5336</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">8</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5336</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">9</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5336</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">10</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5336</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">11</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5336</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">12</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5337</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">13</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5336</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="Indentation">
+        <div class="Heading4">LIN Channel Interfaces</div>
+        <div class="Indentation">
+          <table>
+            <tr>
+              <th class="TableHeadingCell">Channel</th>
+              <th class="TableHeadingCell">Device</th>
+              <th class="TableHeadingCell">Serial number</th>
+              <th class="TableHeadingCell">Driver DLL version</th>
+              <th class="TableHeadingCell">Driver version</th>
+              <th class="TableHeadingCell">LIN Firmware version</th>
+            </tr>
+            <tr>
+              <td class="NumberCell">1</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5321</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+              <td class="NumberCell">1.86</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">2</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5321</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+              <td class="NumberCell">1.86</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">3</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5337</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+              <td class="NumberCell">1.86</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="Indentation">
+        <div class="Heading4">Ethernet Channel Interfaces</div>
+        <div class="Indentation">
+          <table>
+            <tr>
+              <th class="TableHeadingCell">Channel</th>
+              <th class="TableHeadingCell">Device</th>
+              <th class="TableHeadingCell">Serial number</th>
+              <th class="TableHeadingCell">Driver DLL version</th>
+              <th class="TableHeadingCell">Driver version</th>
+            </tr>
+            <tr>
+              <td class="NumberCell">1</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">261</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">2</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">223</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">3</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">226</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">4</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">226</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">5</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">226</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">6</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">226</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">7</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">226</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">8</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">223</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">9</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">223</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">10</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">223</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">11</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">261</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">12</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">261</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">13</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">261</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">14</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">223</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">16</td>
+              <td class="NumberCell">VT6306</td>
+              <td class="NumberCell">223</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">26.20.14</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="Indentation">
+        <div class="Heading4">I/O Interfaces</div>
+        <div class="Indentation">
+          <table>
+            <tr>
+              <th class="TableHeadingCell">Channel</th>
+              <th class="TableHeadingCell">Device</th>
+              <th class="TableHeadingCell">Serial number</th>
+              <th class="TableHeadingCell">Driver DLL version</th>
+              <th class="TableHeadingCell">Driver version</th>
+            </tr>
+            <tr>
+              <td class="NumberCell">DAIO1</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5321</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">DAIO2</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5336</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">DAIO3</td>
+              <td class="NumberCell">VN7572</td>
+              <td class="NumberCell">5337</td>
+              <td class="NumberCell">26.20.14</td>
+              <td class="NumberCell">25.20.10</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="Indentation">
+        <div class="Heading4">VT-System</div>
+        <div class="Indentation">
+          <table>
+            <tr>
+              <th class="TableHeadingCell">Device</th>
+              <th class="TableHeadingCell">Serial number</th>
+              <th class="TableHeadingCell">Firmware version</th>
+              <th class="TableHeadingCell">Hardware version</th>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT6204B (offline)</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT6204B (offline)</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT6204B (offline)</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT8012A</td>
+              <td class="NumberCell">1891</td>
+              <td class="NumberCell">0.0.0</td>
+              <td class="NumberCell">0x0</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT6306 (100BASE-T1)</td>
+              <td class="NumberCell">223</td>
+              <td class="NumberCell">0.0.0</td>
+              <td class="NumberCell">0x2</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT6306 (100BASE-T1)</td>
+              <td class="NumberCell">226</td>
+              <td class="NumberCell">0.0.0</td>
+              <td class="NumberCell">0x2</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT6306 (1000BASE-T1)</td>
+              <td class="NumberCell">192</td>
+              <td class="NumberCell">0.0.0</td>
+              <td class="NumberCell">0x2</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT6306 (1000BASE-T1)</td>
+              <td class="NumberCell">261</td>
+              <td class="NumberCell">0.0.0</td>
+              <td class="NumberCell">0x2</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT6204B (offline)</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT2848 (offline)</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+              <td class="NumberCell">-</td>
+            </tr>
+            <tr>
+              <td class="NumberCell">VT7001A</td>
+              <td class="NumberCell">4014</td>
+              <td class="NumberCell">2.1.1</td>
+              <td class="NumberCell">0x1311</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="Heading4">Logging and video recordings</div>
+      <div class="Indentation">
+        <table>
+          <th class="TableHeadingCell">Start Time</th>
+          <th class="TableHeadingCell">End Time</th>
+          <th class="TableHeadingCell">Logging/Video File</th>
+          <tr>
+            <td class="NumberCell">Active at test start</td>
+            <td class="NumberCell">Active at test end</td>
+            <td class="NumberCell" style="text-align:left">..\Logs\TC.asc</td>
+          </tr>
+          <tr>
+            <td class="NumberCell">Active at test start</td>
+            <td class="NumberCell">Active at test end</td>
+            <td class="NumberCell" style="text-align:left">..\Logs\TC.blf</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <a name="TestOverview"></a>
+    <table class="SubHeadingTable">
+      <tr>
+        <td>
+          <div class="Heading2">Test Overview</div>
+        </td>
+      </tr>
+    </table>
+    <div class="Indentation">
+      <table class="DefaultTable">
+        <tr>
+          <td style="padding-right: 0.5em;" class="CellNoColor">Test begin: </td>
+          <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-25 11:48:25</td>
+          <td class="CellNoColor">(logging timestamp    8.846084)</td>
+        </tr>
+        <tr>
+          <td style="padding-right: 0.5em;" class="CellNoColor">Test end: </td>
+          <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-25 11:51:33</td>
+          <td class="CellNoColor" nowrap>(logging timestamp  196.646924)</td>
+        </tr>
+      </table>
+      <div class="Heading4">Statistics</div>
+      <div class="Indentation">
+        <table class="OverviewTable">
+          <tr>
+            <td class="DefineCell">Overall number of test cases </td>
+            <td class="NumberCell" width="60">1</td>
+            <td class="DefaultCell"></td>
+          </tr>
+          <tr>
+            <td class="DefineCell">Executed test cases </td>
+            <td class="NumberCell">1</td>
+            <td class="DefaultCell">100% of all test cases</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">Not executed test cases </td>
+            <td class="NumberCell">0</td>
+            <td class="DefaultCell">0% of all test cases</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">Test cases passed </td>
+            <td class="NumberCell">0</td>
+            <td class="NumberCell">0% of executed test cases</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">Test cases failed </td>
+            <td class="NumberCellNegativeResult">1</td>
+            <td class="NumberCellNegativeResult">100% of executed test cases</td>
+          </tr>
+        </table>
+      </div>
+      <div class="Heading4">Test Case Results</div>
+      <div class="Indentation">
+        <table class="OverviewTable">
+          <tr>
+            <td class="DefineCell">1</td>
+            <td class="DefaultCell"></td>
+            <td class="DefaultCell">
+              <a href="#i__1433479312_9">TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD</a>
+            </td>
+            <td class="NegativeResultCell">
+              <a href="#i__1433479312_1505" onclick="showTC('1')">fail</a>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <a name="TestModuleInfo"></a>
+    <table class="SubHeadingTable">
+      <tr>
+        <td class="LinkCell">
+          <a class="Undecorated" id="lnk_" href="javascript:switchAll('',document.all['lnk_'].text)">[−]</a>
+        </td>
+        <td>
+          <div class="Heading2">Test Module Information</div>
+        </td>
+      </tr>
+    </table>
+    <table class="SubHeadingTable">
+      <tr>
+        <td>
+          <big class="Heading2">Test Case Details</big>
+        </td>
+      </tr>
+    </table>
+    <table>
+      <tr>
+        <td class="LinkCell">
+          <a class="Undecorated" id="lnk_1" href="javascript:switchAll('1',document.all['lnk_1'].text)">[−]</a>
+        </td>
+        <td class="TestcaseHeadingNegativeResult">
+          <big class="Heading3">1 <a name="i__1433479312_9">TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD</a>: Failed</big>
+        </td>
+      </tr>
+    </table>
+    <div class="Indentation" id="div_1">
+      <div class="Indentation">
+        <table class="DefaultTable">
+          <tr>
+            <td style="padding-right: 0.5em;" class="CellNoColor">Test case begin: </td>
+            <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-25 11:48:25</td>
+            <td class="CellNoColor">(logging timestamp    8.846084)</td>
+          </tr>
+          <tr>
+            <td style="padding-right: 0.5em;" class="CellNoColor">Test case end: </td>
+            <td style="padding-right: 0.5em;" class="CellNoColor">2026-10-25 11:51:33</td>
+            <td class="CellNoColor" nowrap>(logging timestamp  196.646924)</td>
+          </tr>
+        </table>
+      </div>
+      <div class="Indentation"></div>
+      <table class="TestGroupHeadingBackground">
+        <tr>
+          <td>
+            <big class="Heading3">Main Part of Test Case</big>
+          </td>
+        </tr>
+      </table>
+      <div class="Indentation">
+        <table class="ResultTable">
+          <tr>
+            <th class="TableHeadingCell" width="1px">Timestamp</th>
+            <th class="TableHeadingCell" width="1px">Test Step</th>
+            <th class="TableHeadingCell" width="auto">Description</th>
+            <th class="TableHeadingCell" width="1px">Result</th>
+          </tr>
+          <tr>
+            <td class="DefineCell">   8.846084</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Enable Clamp 30</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">   8.846084</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Enable Clamp 30</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">   8.846084</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Enable Clamp 15</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  11.846084</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=3000ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  11.846084</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Enable Clamp 15</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  13.846084</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=2000ms (max=2000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  13.846084</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Restbus simulation running</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  33.846084</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=20000ms (max=20000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  33.847783</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_VD' Elapsed time=1.69855ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  33.847783</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Connect diagnostic client to Diag-CAN</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  33.847783</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Diag client connected to Diag-CAN</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  34.347783</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  34.394782</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=46.9993ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  34.894782</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  34.898337</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.5543ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  34.898337</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">ECU SFD locked</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.398337</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.403183</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.8463ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.403183</td>
+            <td class="NumberCell">Precondition</td>
+            <td class="DefaultCell">Default Diagnostic Session 0x01 entered</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.903183</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.903183</td>
+            <td class="NumberCell">Step 1</td>
+            <td class="DefaultCell">Read DID 0x0174 - ECU SFD locked</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.907107</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.9243ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.910754</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.64631ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.913572</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=2.81834ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.913572</td>
+            <td class="NumberCell">Result 1</td>
+            <td class="DefaultCell">Positive response: 62 01 74 00 00 01 00 (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  35.913572</td>
+            <td class="NumberCell">Result 1 check</td>
+            <td class="DefaultCell">State=0x00 (locked), Type=0x00 as expected</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  36.413572</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  36.413572</td>
+            <td class="NumberCell">Step 2</td>
+            <td class="DefaultCell">SFD UnLock Basic Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  36.573966</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=160.394ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  41.573966</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  51.573966</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=10000ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  53.573966</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=2000ms (max=2000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  60.573966</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=7000ms (max=7000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  65.573966</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  65.599178</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=25.2119ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  66.599178</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=1000ms (max=1000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  66.635989</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=36.8117ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  66.635989</td>
+            <td class="NumberCell">Result 2</td>
+            <td class="DefaultCell">SFD unlocked with BASIC Role (persistent)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.135989</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.135989</td>
+            <td class="NumberCell">Step 3</td>
+            <td class="DefaultCell">Read DID 0x0174 - BASIC Role unlocked</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.142390</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=6.40027ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.146344</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.95431ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.149358</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.01433ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.149358</td>
+            <td class="NumberCell">Result 3</td>
+            <td class="DefaultCell">Positive response: 62 01 74 02 03 01 FF (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.149358</td>
+            <td class="NumberCell">Result 3 check</td>
+            <td class="DefaultCell">State=0x02 (Basic), persistent=0xFF as expected</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.649358</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.649358</td>
+            <td class="NumberCell">Step 4</td>
+            <td class="DefaultCell">SFD Lock Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.659814</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=10.4562ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  67.659814</td>
+            <td class="NumberCell">Result 4</td>
+            <td class="DefaultCell">ECU SFD Locked</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  68.159814</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  68.159814</td>
+            <td class="NumberCell">Step 5</td>
+            <td class="DefaultCell">SFD UnLock Extended Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  68.322457</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=162.642ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  73.322457</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  83.322457</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=10000ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  85.322457</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=2000ms (max=2000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  92.322457</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=7000ms (max=7000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  97.322457</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  97.355588</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=33.1317ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.355588</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=1000ms (max=1000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.388958</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=33.3697ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.388958</td>
+            <td class="NumberCell">Result 5</td>
+            <td class="DefaultCell">SFD unlocked with EXTENDED Role (persistent)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.888958</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.888958</td>
+            <td class="NumberCell">Step 6</td>
+            <td class="DefaultCell">Read DID 0x0174 - EXTENDED Role unlocked</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.893190</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.23231ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.897539</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.34831ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.900515</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=2.97633ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.900515</td>
+            <td class="NumberCell">Result 6</td>
+            <td class="DefaultCell">Positive response: 62 01 74 03 03 01 FF (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  98.900515</td>
+            <td class="NumberCell">Result 6 check</td>
+            <td class="DefaultCell">State=0x03 (Extended), persistent=0xFF as expected</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  99.400515</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  99.400515</td>
+            <td class="NumberCell">Step 7</td>
+            <td class="DefaultCell">SFD Lock Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  99.413283</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=12.7681ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  99.413283</td>
+            <td class="NumberCell">Result 7</td>
+            <td class="DefaultCell">ECU SFD Locked</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  99.913283</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell">  99.913283</td>
+            <td class="NumberCell">Step 8</td>
+            <td class="DefaultCell">SFD UnLock SuperUser Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 100.073757</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=160.474ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 105.073757</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 115.073757</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=10000ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 117.073757</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=2000ms (max=2000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 124.073757</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=7000ms (max=7000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 129.073757</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 129.101175</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=27.4178ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.101175</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=1000ms (max=1000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.133019</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=31.8438ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.133019</td>
+            <td class="NumberCell">Result 8</td>
+            <td class="DefaultCell">SFD unlocked with SUPERUSER Role (persistent)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.633019</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.633019</td>
+            <td class="NumberCell">Step 9</td>
+            <td class="DefaultCell">Read DID 0x0174 - SUPERUSER Role unlocked</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.641513</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=8.49423ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.645699</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.18628ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.648904</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.20433ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.648904</td>
+            <td class="NumberCell">Result 9</td>
+            <td class="DefaultCell">Positive response: 62 01 74 04 03 01 FF (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 130.648904</td>
+            <td class="NumberCell">Result 9 check</td>
+            <td class="DefaultCell">State=0x04 (Superuser), persistent=0xFF as expected</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 131.148904</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 131.148904</td>
+            <td class="NumberCell">Step 10</td>
+            <td class="DefaultCell">Enter Extended Diagnostic Session 0x03</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 131.153138</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.23431ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 131.153138</td>
+            <td class="NumberCell">Result 10</td>
+            <td class="DefaultCell">Extended Diagnostic Session 0x03 entered</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 131.653138</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 131.653138</td>
+            <td class="NumberCell">Step 11</td>
+            <td class="DefaultCell">Read DID 0x0174 - SUPERUSER still active in Extended Session</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 131.657438</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.30031ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 131.657438</td>
+            <td class="NumberCell">Result 11</td>
+            <td class="DefaultCell">Positive response: 62 01 74 04 03 01 FF (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 131.657438</td>
+            <td class="NumberCell">Result 11 check</td>
+            <td class="DefaultCell">State=0x04 (Superuser) persists in Extended Session as expected</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 132.157438</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 132.157438</td>
+            <td class="NumberCell">Step 12</td>
+            <td class="DefaultCell">SFD Lock Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 132.169392</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=11.9541ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 132.169392</td>
+            <td class="NumberCell">Result 12</td>
+            <td class="DefaultCell">ECU SFD Locked</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 132.669392</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 132.669392</td>
+            <td class="NumberCell">Step 13</td>
+            <td class="DefaultCell">Enter Default Diagnostic Session 0x01</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 132.673275</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.8823ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 132.673275</td>
+            <td class="NumberCell">Result 13</td>
+            <td class="DefaultCell">Default Diagnostic Session 0x01 entered</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 133.173275</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 133.173275</td>
+            <td class="NumberCell">Step 14</td>
+            <td class="DefaultCell">SFD UnLock Production Persistent Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 133.335541</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=162.266ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 138.335541</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 148.335541</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=10000ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 150.335541</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=2000ms (max=2000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 157.335541</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=7000ms (max=7000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 162.335541</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 162.364646</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=29.1058ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.364646</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=1000ms (max=1000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.394430</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=29.7838ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.394430</td>
+            <td class="NumberCell">Result 14</td>
+            <td class="DefaultCell">SFD unlocked with PRODUCTION Role (persistent)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.894430</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.894430</td>
+            <td class="NumberCell">Step 15</td>
+            <td class="DefaultCell">Read DID 0x0174 - PRODUCTION Role unlocked</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.899575</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=5.14428ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.903241</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.66631ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.907549</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.30831ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.907549</td>
+            <td class="NumberCell">Result 15</td>
+            <td class="DefaultCell">Positive response: 62 01 74 05 03 01 FF (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 163.907549</td>
+            <td class="NumberCell">Result 15 check</td>
+            <td class="DefaultCell">State=0x05 (Production), persistent=0xFF as expected</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 164.407549</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 164.407549</td>
+            <td class="NumberCell">Step 16</td>
+            <td class="DefaultCell">SFD Lock Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 164.417961</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=10.4122ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 164.417961</td>
+            <td class="NumberCell">Result 16</td>
+            <td class="DefaultCell">ECU SFD Locked</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 164.917961</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 164.917961</td>
+            <td class="NumberCell">Step 17</td>
+            <td class="DefaultCell">SFD UnLock OTA Persistent Starting</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 165.079151</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=161.19ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 170.079151</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 180.079151</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=10000ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 182.079151</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=2000ms (max=2000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 189.079151</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=7000ms (max=7000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 194.079151</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=5000ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 194.106449</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=27.2978ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.106449</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=1000ms (max=1000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.131959</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=25.5099ms (max=10000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.131959</td>
+            <td class="NumberCell">Result 17</td>
+            <td class="DefaultCell">SFD unlock sequence for OTA Role executed</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.631959</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=500ms (max=500ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.631959</td>
+            <td class="NumberCell">Step 18</td>
+            <td class="DefaultCell">Read DID 0x0174 - OTA Role unlocked</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.636231</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=4.2723ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.642978</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=6.74625ms (max=3000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.646924</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Resumed on Diagnostics response from 'HCP5_Diag_PD' Elapsed time=3.94633ms (max=5000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 195.646924</td>
+            <td class="NumberCell">Result 18</td>
+            <td class="DefaultCell">Positive response: 62 01 74 00 00 01 00 (len=7)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+          <tr id="i__1433479312_1505">
+            <td class="DefineCell"> 195.646924</td>
+            <td class="NumberCell">Result 18 check</td>
+            <td class="DefaultCell">Unexpected: readBuf[3]=0x00 readBuf[6]=0x00 (expected 0x06 / 0xFF)</td>
+            <td class="NegativeResultCell">fail</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 196.646924</td>
+            <td class="NumberCell">Resume reason</td>
+            <td class="DefaultCell">Elapsed time=1000ms (max=1000ms)</td>
+            <td class="DefaultCell">-</td>
+          </tr>
+          <tr>
+            <td class="DefineCell"> 196.646924</td>
+            <td class="NumberCell">Postcondition</td>
+            <td class="DefaultCell">ECU SFD unlocked (OTA Role, persistent)</td>
+            <td class="PositiveResultCell">pass</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <table class="SubHeadingTable">
+      <tr>
+        <td>
+          <div class="Heading2">End of Report</div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

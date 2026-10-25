@@ -1,0 +1,1287 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<testmodule starttime="2026-10-25 12:36:04" timestamp="   9.135000" verdicts="2_basic" measurementid="84740915-2d75-44fa-9159-659bafca2a0f">
+  <testcase starttime="2026-10-25 12:36:04" timestamp="   9.135000">
+    <teststep timestamp="   9.135000" level="0" type="user" ident="Precondition" result="pass">Enable Clamp 30</teststep>
+    <teststep timestamp="   9.135000" level="0" type="user" ident="Precondition" result="pass">Enable Clamp 15</teststep>
+    <teststep timestamp="  12.135000" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=3000ms (max=3000ms)</teststep>
+    <teststep timestamp="  14.135000" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=2000ms (max=2000ms)</teststep>
+    <teststep timestamp="  14.135000" level="0" type="user" ident="Precondition" result="pass">Clamp30/15 on, Restbus simulation running</teststep>
+    <teststep timestamp="  34.135000" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=20000ms (max=20000ms)</teststep>
+    <teststep timestamp="  34.136761" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_VD&apos; Elapsed time=1.76092ms (max=3000ms)</teststep>
+    <teststep timestamp="  34.136761" level="0" type="user" ident="Precondition" result="pass">Connect diagnostic client to Diag-CAN</teststep>
+    <teststep timestamp="  34.136761" level="0" type="user" ident="Precondition" result="pass">Diag client connected to Diag-CAN (PD)</teststep>
+    <teststep timestamp="  34.175910" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=39.1495ms (max=3000ms)</teststep>
+    <teststep timestamp="  34.175910" level="0" type="user" ident="Precondition" result="pass">Default Diagnostic Session 0x01 active</teststep>
+    <teststep timestamp="  34.175910" level="0" type="user" ident="Step 1" result="na">Send RID 0xC012 StartRoutine (31 01 C0 12 01) in Default Session</teststep>
+    <teststep timestamp="  34.184385" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=8.47422ms (max=10000ms)</teststep>
+    <teststep timestamp="  34.184385" level="0" type="user" ident="Result 1" result="fail">Unexpected NRC 0x13 (expected 0x31)</teststep>
+    <teststep timestamp="  34.684385" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  34.684385" level="0" type="user" ident="Step 2" result="na">Enter Programming Diagnostics Session 0x02</teststep>
+    <teststep timestamp="  34.689259" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=4.8743ms (max=3000ms)</teststep>
+    <teststep timestamp="  34.713663" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=24.4042ms (max=3000ms)</teststep>
+    <teststep timestamp="  34.713663" level="0" type="user" ident="Result 2" result="pass">Programming Session 0x02 entered</teststep>
+    <teststep timestamp="  35.213663" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  35.213663" level="0" type="user" ident="Step 3" result="na">Send RID 0xC012 StartRoutine in Programming Session</teststep>
+    <teststep timestamp="  35.219222" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=5.55828ms (max=10000ms)</teststep>
+    <teststep timestamp="  35.219222" level="0" type="user" ident="Result 3" result="fail">Unexpected NRC 0x13 (expected 0x31)</teststep>
+    <teststep timestamp="  35.719222" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  35.719222" level="0" type="user" ident="Step 4" result="na">Enter Extended Diagnostics Session 0x03</teststep>
+    <teststep timestamp="  35.729020" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=9.79855ms (max=3000ms)</teststep>
+    <teststep timestamp="  35.733362" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=4.3423ms (max=3000ms)</teststep>
+    <teststep timestamp="  35.733362" level="0" type="user" ident="Result 4" result="pass">Extended Session 0x03 entered</teststep>
+    <teststep timestamp="  36.233362" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  36.233362" level="0" type="user" ident="Step 5" result="na">Send reading request for DID 0x0330 (E2E protected)</teststep>
+    <teststep timestamp="  36.234963" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_VD&apos; Elapsed time=1.60036ms (max=5000ms)</teststep>
+    <teststep timestamp="  36.234963" level="0" type="user" ident="Result 5" result="fail">DID 0x0330 read NRC=0x31</teststep>
+    <teststep timestamp="  36.734963" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  36.734963" level="0" type="user" ident="Step 6" result="na">Activate E2E secured transfer ($C011) for DID 0x0330 with payload 0x3C</teststep>
+    <teststep timestamp="  36.743897" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=8.9342ms (max=3000ms)</teststep>
+    <teststep timestamp="  36.904475" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=160.578ms (max=10000ms)</teststep>
+    <teststep timestamp="  39.904475" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=3000ms (max=3000ms)</teststep>
+    <teststep timestamp="  49.904475" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=10000ms (max=10000ms)</teststep>
+    <teststep timestamp="  64.904475" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=15000ms (max=15000ms)</teststep>
+    <teststep timestamp="  64.928605" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=24.1299ms (max=3000ms)</teststep>
+    <teststep timestamp="  65.928605" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=1000ms (max=1000ms)</teststep>
+    <teststep timestamp="  65.958483" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=29.8786ms (max=10000ms)</teststep>
+    <teststep timestamp="  65.961642" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=3.15833ms (max=5000ms)</teststep>
+    <teststep timestamp="  65.961642" level="0" type="user" ident="Result" result="fail">Write DID Failed, NRC=0x13</teststep>
+    <teststep timestamp="  65.961642" level="0" type="user" ident="Result 6" result="fail">EEUnlockAndWriteDid_PD failed, rc=-3</teststep>
+    <teststep timestamp="  66.461642" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  66.461642" level="0" type="user" ident="Step 7+8" result="na">Write DID 0x0330=0x3C (compliant) and C012 commit (sf=01)</teststep>
+    <teststep timestamp="  66.461642" level="0" type="user" ident="Result 7+8" result="pass">C012 commit response byte[5]=0x00 -&gt; 24 00 as expected</teststep>
+    <teststep timestamp="  66.961642" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  66.961642" level="0" type="user" ident="Step 9" result="na">Read DID 0x0330 â€” expect same payload as written in step 7 (0x3C)</teststep>
+    <teststep timestamp="  66.963140" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_VD&apos; Elapsed time=1.49836ms (max=5000ms)</teststep>
+    <teststep timestamp="  66.963140" level="0" type="user" ident="Result 9" result="fail">DID 0x0330 read NRC=0x31</teststep>
+    <teststep timestamp="  67.463140" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  67.463140" level="0" type="user" ident="Step 10+11+12" result="na">Repeat $C011 with non-compliant payload 0x2C, Write DID, C012 commit (sf=01)</teststep>
+    <teststep timestamp="  67.467576" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=4.4363ms (max=3000ms)</teststep>
+    <teststep timestamp="  67.626929" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=159.352ms (max=10000ms)</teststep>
+    <teststep timestamp="  70.626929" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=3000ms (max=3000ms)</teststep>
+    <teststep timestamp="  80.626929" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=10000ms (max=10000ms)</teststep>
+    <teststep timestamp="  95.626929" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=15000ms (max=15000ms)</teststep>
+    <teststep timestamp="  95.654474" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=27.5458ms (max=3000ms)</teststep>
+    <teststep timestamp="  96.654474" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=1000ms (max=1000ms)</teststep>
+    <teststep timestamp="  96.683471" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=28.9966ms (max=10000ms)</teststep>
+    <teststep timestamp="  96.689067" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=5.59628ms (max=5000ms)</teststep>
+    <teststep timestamp="  96.689067" level="0" type="user" ident="Result" result="fail">Write DID Failed, NRC=0x13</teststep>
+    <teststep timestamp="  96.689067" level="0" type="user" ident="Result 10" result="pass">C011 activation for non-compliant payload complete (rc=-3)</teststep>
+    <teststep timestamp="  97.189067" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  97.189067" level="0" type="user" ident="Step 12 check" result="na">C012 subfunction 01 after non-compliant write -&gt; expect 71 01 C0 12 14 02</teststep>
+    <teststep timestamp="  97.189067" level="0" type="user" ident="Result 12" result="fail">C012 response byte[5]=0x00 (expected 0x02)</teststep>
+    <teststep timestamp="  97.689067" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  97.689067" level="0" type="user" ident="Step 13" result="na">Read DID 0x0330 â€” expect value unchanged from step 9 (0x3C)</teststep>
+    <teststep timestamp="  97.691548" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_VD&apos; Elapsed time=2.48036ms (max=5000ms)</teststep>
+    <teststep timestamp="  97.691548" level="0" type="user" ident="Result 13" result="fail">DID 0x0330 read NRC=0x31</teststep>
+    <teststep timestamp="  98.191548" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp="  98.191548" level="0" type="user" ident="Step 14+15" result="na">Repeat $C011 (compliant payload 0x3C) and Write DID 0x0330 = 0x3C</teststep>
+    <teststep timestamp="  98.195210" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=3.6623ms (max=3000ms)</teststep>
+    <teststep timestamp="  98.354348" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=159.138ms (max=10000ms)</teststep>
+    <teststep timestamp=" 101.354348" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=3000ms (max=3000ms)</teststep>
+    <teststep timestamp=" 111.354348" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=10000ms (max=10000ms)</teststep>
+    <teststep timestamp=" 126.354348" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=15000ms (max=15000ms)</teststep>
+    <teststep timestamp=" 126.382930" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=28.5818ms (max=3000ms)</teststep>
+    <teststep timestamp=" 127.382930" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=1000ms (max=1000ms)</teststep>
+    <teststep timestamp=" 127.409889" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=26.9586ms (max=10000ms)</teststep>
+    <teststep timestamp=" 127.417553" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=7.66425ms (max=5000ms)</teststep>
+    <teststep timestamp=" 127.417553" level="0" type="user" ident="Result" result="fail">Write DID Failed, NRC=0x13</teststep>
+    <teststep timestamp=" 127.417553" level="0" type="user" ident="Result 14+15" result="fail">EEUnlockAndWriteDid_PD failed, rc=-3</teststep>
+    <teststep timestamp=" 127.917553" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp=" 127.917553" level="0" type="user" ident="Step 16" result="na">Send RID 0xC012 StartRoutine subfunction 02 (finalise)</teststep>
+    <teststep timestamp=" 127.921151" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_PD&apos; Elapsed time=3.5983ms (max=10000ms)</teststep>
+    <teststep timestamp=" 127.921151" level="0" type="user" ident="Result 16" result="pass">C012 sf=02 positive: 71 01 C0 12 24 01</teststep>
+    <teststep timestamp=" 128.421151" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=500ms (max=500ms)</teststep>
+    <teststep timestamp=" 128.421151" level="0" type="user" ident="Step 17" result="na">Read DID 0x0330 â€” expect same payload as step 15 (0x3C)</teststep>
+    <teststep timestamp=" 128.422862" level="1" type="auto" ident="Resume reason" result="na">Resumed on Diagnostics response from &apos;HCP5_Diag_VD&apos; Elapsed time=1.71036ms (max=5000ms)</teststep>
+    <teststep timestamp=" 128.422862" level="0" type="user" ident="Result 17" result="fail">DID 0x0330 read NRC=0x31</teststep>
+    <teststep timestamp=" 129.422862" level="1" type="auto" ident="Resume reason" result="na">Elapsed time=1000ms (max=1000ms)</teststep>
+    <teststep timestamp=" 129.422862" level="0" type="user" ident="Postcondition" result="pass">none</teststep>
+    <verdict time="2026-10-25 12:36:29" timestamp="  34.184385" endtime="2026-10-25 12:38:04" endtimestamp=" 129.422862" result="fail" />
+    <title>TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD</title>
+  </testcase>
+  <verdict time="2026-10-25 12:36:29" timestamp="  34.184385" endtime="2026-10-25 12:38:04" endtimestamp=" 129.422862" result="fail" />
+  <title>TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD</title>
+  <testlogfiles>
+    <testlogfile file="..\Logs\TC.asc" logbegin="Active at test start" logend="Active at test end" />
+    <testlogfile file="..\Logs\TC.blf" logbegin="Active at test start" logend="Active at test end" />
+  </testlogfiles>
+  <engineer>
+    <xinfo>
+      <name>Windows Login Name</name>
+      <description>BSWVTHCP5</description>
+    </xinfo>
+  </engineer>
+  <testsetup>
+    <xinfo>
+      <name>Version</name>
+      <description>CANoe.CAN.LIN.Ethernet /pro 16.8.6 (SP8)</description>
+    </xinfo>
+    <xinfo>
+      <name>Configuration</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\HCP5_V12.10.00_RBS_DIAG.cfg</description>
+    </xinfo>
+    <xinfo>
+      <name>Database FaultInjectionUnit-V2</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\CustomNodes\FIU\FaultInjectionUnit-V2.dbc (2026-10-17 07:00:19)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database HCP3_CANFD01</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_HCP3_CANFD.arxml (2026-10-17 07:00:36)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database HCP5_CANFD02</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CANFD02.arxml (2026-10-17 07:00:21)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database HCP5_CANFD05</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CANFD05.arxml (2026-10-17 07:00:22)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database HCP5_CANFD06</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CANFD06.arxml (2026-10-17 07:00:23)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CONMOD_ETH.arxml (2026-10-17 07:00:23)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_HCP2_1_ETH.arxml (2026-10-17 07:00:26)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_HCP3_ETH.arxml (2026-10-17 07:00:28)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_MFK_ETH.arxml (2026-10-17 07:00:31)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_MIK_ETH.arxml (2026-10-17 07:00:32)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_SACID_1_ETH.arxml (2026-10-17 07:00:32)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_zDML_ETH.arxml (2026-10-17 07:00:33)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database WU_ConMod_CANFD</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_CONMOD_CANFD.arxml (2026-10-17 07:00:34)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database WU_HCP2_CANFD</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_HCP2_CANFD.arxml (2026-10-17 07:00:36)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database WU_HCP4_CANFD</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_HCP4_CANFD.arxml (2026-10-17 07:00:37)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database DiagCAN on HCP5_DiagCAN</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\DIAGCAN_Developing_messages.arxml (2026-10-17 07:00:19)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database HCP1_CANFD01 on WU_HCP1_CANFD</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_HCP1_CANFD.arxml (2026-10-17 07:00:35)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database HCP5_CAN03 on HCP5_CAN03</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CAN03.arxml (2026-10-17 07:00:20)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database HCP5_CANFD01 on HCP5_CANFD01</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_CANFD01.arxml (2026-10-17 07:00:21)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database HCP5_GW_IsoTp on HCP5_DiagCAN</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\CustomNodes\IsoTp_Tester\HCP5_GW_IsoTp.dbc (2026-10-17 07:00:19)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database LV_EnVarGlobal on HCP5_DiagCAN</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\CustomNodes\KlemmeSim\LV_EnVarGlobal.dbc (2026-10-17 07:00:19)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database WU_PASD_CANFD on WU_PASD_CANFD</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_WU_PASD_CANFD.arxml (2026-10-17 07:00:37)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database E3_1_2_Premium_HCP5_LIN01_KMatrix_Master_HCP5_P2_OBD_Safety_SignalSuffix_V12.10.22.02A_20250909_BAm_P01 on LIN01</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_HCP5_LIN01_KMatrix_Master_HCP5_P2_OBD_Safety_SignalSuffix_V12.10.22.02A_20250909_BAm_P01.ldf (2026-10-17 07:00:19)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database E3_1_2_Premium_HCP5_LIN02_KMatrix_Master_HCP5_P2_OBD_Safety_SignalSuffix_V12.10.22.02A_20250909_BAm_P01 on LIN02</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_HCP5_LIN02_KMatrix_Master_HCP5_P2_OBD_Safety_SignalSuffix_V12.10.22.02A_20250909_BAm_P01.ldf (2026-10-17 07:00:19)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database E3_1_2_Premium_HCP5_LIN03_KMatrix_SignalSuffix_V12.10.22.02A_20250909_BAm_P01 on LIN03</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_HCP5_LIN03_KMatrix_SignalSuffix_V12.10.22.02A_20250909_BAm_P01.ldf (2026-10-17 07:00:19)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2 on HCP5_MRR_ETH</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_MRR_ETH.arxml (2026-10-17 07:00:32)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2 on HCP5_HCP1_ETH</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_HCP1_ETH.arxml (2026-10-17 07:00:25)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2 on HCP5_HCP4_ETH</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_HCP4_ETH.arxml (2026-10-17 07:00:30)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2 on HCP5_PASD_ETH</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_PASD_ETH.arxml (2026-10-17 07:00:32)</description>
+    </xinfo>
+    <xinfo>
+      <name>Database ETH_Cluster_E3_1_2 on HCP5_XVIEW_ETH</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\Databases\E3_1_2_Premium_V12.10.00F_HCP5_XVIEW_ETH.arxml (2026-10-17 07:00:32)</description>
+    </xinfo>
+    <xinfo>
+      <name>Diagnostic Description of HCP5_Diag_PD</name>
+      <description>Basic Diagnostic Description</description>
+    </xinfo>
+    <xinfo>
+      <name>Diagnostic Description of HCP5_Diag_VD</name>
+      <description>Basic Diagnostic Description</description>
+    </xinfo>
+    <xinfo>
+      <name>Diagnostic Description of HCP5_Diagnostics_DoIP_Funtional_VD</name>
+      <description>Basic Diagnostic Description</description>
+    </xinfo>
+    <xinfo>
+      <name>Diagnostic Description of HCP5_Diagnostics_DoIP_PD</name>
+      <description>Basic Diagnostic Description</description>
+    </xinfo>
+    <xinfo>
+      <name>Diagnostic Description of HCP5_Diagnostics_DoIP_VD</name>
+      <description>Basic Diagnostic Description</description>
+    </xinfo>
+    <xinfo>
+      <name>Test Module Name</name>
+      <description>TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD</description>
+    </xinfo>
+    <xinfo>
+      <name>Test Module File</name>
+      <description>D:\KPIT_testAutomationCl8\RestBus_Diag_IDGBase\CAPL\Test Cases\TC_HCP5_DIAG_11_004_RID_End_of_Diagnostics_Communication_0xC012_PD.can</description>
+    </xinfo>
+    <xinfo>
+      <name>Last modification of Test Module File</name>
+      <description>2026-10-25, 12:35:27</description>
+    </xinfo>
+    <xinfo>
+      <name>Windows Computer Name</name>
+      <description>GPW-29</description>
+    </xinfo>
+    <xinfo>
+      <name>Nodelayer Module AsrPDUIL</name>
+      <description>CANoe AutoSAR PDU Interaction Layer NL (General OEM) Version 1.85.75 (Apr 12 2022 19:27:10) , c:\CANrtk\Exec32\SynchronizedFiles\AsrPDUIL.dll</description>
+    </xinfo>
+    <xinfo>
+      <name>Nodelayer Module AsrNM33</name>
+      <description>AsrNM (Version 3.3.77 Windows 32-Bit), c:\CANrtk\Exec32\SynchronizedFiles\AsrNM33.dll</description>
+    </xinfo>
+    <xinfo>
+      <name>Nodelayer Module CANoeILNLVector</name>
+      <description>CANoe Interaction Layer NL (Vector) Version 3.30.102 (Nov  4 2021 07:26:28) , c:\CANrtk\Exec32\SynchronizedFiles\CANoeILNLVector.dll</description>
+    </xinfo>
+    <xinfo>
+      <name>Nodelayer Module DoIP</name>
+      <description>6.3.7.3, </description>
+    </xinfo>
+    <xinfo>
+      <name>Nodelayer Module Ethernet_IL</name>
+      <description>Ethernet Interaction Layer for CANoe, Version 16.3.110, c:\CANrtk\Exec32\SynchronizedFiles\Ethernet_IL.dll</description>
+    </xinfo>
+    <xinfo>
+      <name>Nodelayer Module SomeIP_IL</name>
+      <description>SOME/IP Interaction Layer for CANoe, Version 16.3.110, c:\CANrtk\Exec32\SynchronizedFiles\SomeIP_IL.dll</description>
+    </xinfo>
+    <xinfo>
+      <name>Nodelayer Module CANoeILNL_AUTOSAR_Eth</name>
+      <description>AUTOSAR Interaction Layer for CANoe, Version 16.3.110, c:\CANrtk\Exec32\SynchronizedFiles\CANoeILNL_AUTOSAR_Eth.dll</description>
+    </xinfo>
+  </testsetup>
+  <hardware name="CAN Channel Interfaces" category="CategoryCANIF">
+    <xinfoset type="device">
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>1</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5321</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>2</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5321</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>3</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5321</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>4</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5321</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>5</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5321</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>6</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5336</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>7</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5336</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>8</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5336</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>9</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5336</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>10</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5336</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>11</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5336</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>12</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5337</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>13</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5336</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+    </xinfoset>
+  </hardware>
+  <hardware name="LIN Channel Interfaces" category="CategoryLINIF">
+    <xinfoset type="device">
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>1</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5321</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>LIN Firmware version</name>
+        <description>1.86</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>2</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5321</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>LIN Firmware version</name>
+        <description>1.86</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>3</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5337</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>LIN Firmware version</name>
+        <description>1.86</description>
+      </xinfo>
+      </xinfoobject>
+    </xinfoset>
+  </hardware>
+  <hardware name="Ethernet Channel Interfaces" category="CategoryETHIF">
+    <xinfoset type="device">
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>1</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>261</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>2</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>223</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>3</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>226</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>4</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>226</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>5</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>226</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>6</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>226</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>7</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>226</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>8</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>223</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>9</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>223</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>10</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>223</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>11</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>261</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>12</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>261</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>13</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>261</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>14</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>223</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>16</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>223</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      </xinfoobject>
+    </xinfoset>
+  </hardware>
+  <hardware name="I/O Interfaces" category="CategoryIOIF">
+    <xinfoset type="device">
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>DAIO1</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5321</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>DAIO2</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5336</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="channel">
+        <name>Channel</name>
+        <description>DAIO3</description>
+      </xinfo>
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VN7572</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>5337</description>
+      </xinfo>
+      <xinfo key="driverdllversion">
+        <name>Driver DLL version</name>
+        <description>26.20.14</description>
+      </xinfo>
+      <xinfo key="driverversion">
+        <name>Driver version</name>
+        <description>25.20.10</description>
+      </xinfo>
+      </xinfoobject>
+    </xinfoset>
+  </hardware>
+  <hardware name="VT-System" category="vtsystem">
+    <xinfoset type="device">
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6204B (offline)</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>-</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6204B (offline)</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>-</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6204B (offline)</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>-</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT8012A</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>1891</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>0.0.0</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>0x0</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306 (100BASE-T1)</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>223</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>0.0.0</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>0x2</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306 (100BASE-T1)</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>226</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>0.0.0</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>0x2</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306 (1000BASE-T1)</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>192</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>0.0.0</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>0x2</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6306 (1000BASE-T1)</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>261</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>0.0.0</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>0x2</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT6204B (offline)</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>-</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT2848 (offline)</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>-</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>-</description>
+      </xinfo>
+      </xinfoobject>
+      <xinfoobject type="device">
+      <xinfo key="device">
+        <name>Device</name>
+        <description>VT7001A</description>
+      </xinfo>
+      <xinfo key="serialnumber">
+        <name>Serial number</name>
+        <description>4014</description>
+      </xinfo>
+      <xinfo key="firmwareversion">
+        <name>Firmware version</name>
+        <description>2.1.1</description>
+      </xinfo>
+      <xinfo key="hardwareversion">
+        <name>Hardware version</name>
+        <description>0x1311</description>
+      </xinfo>
+      </xinfoobject>
+    </xinfoset>
+  </hardware>
+</testmodule>
+<!--footprint="6fb7785c7f16e88b3386b67fff5460c8" version="1"-->
