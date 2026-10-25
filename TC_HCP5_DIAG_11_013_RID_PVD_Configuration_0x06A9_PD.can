@@ -56,7 +56,6 @@ testcase TC_HCP5_DIAG_11_013_RID_PVD_Configuration_0x06A9_PD()
   long    len;
   long    nrc;
   long    receivedNRC;
-  byte    sf;  /* subfunction byte */
 
   write("=== TC_HCP5_DIAG_11_013_RID_PVD_Configuration_0x06A9_PD START ===");
 
@@ -193,51 +192,152 @@ testcase TC_HCP5_DIAG_11_013_RID_PVD_Configuration_0x06A9_PD()
     Pass report: 2700ms between each call
   ======================================================*/
 
-  sf = 0x00;
-  while (sf <= 0x06)
+  /* Steps 5-11: send each subfunction explicitly for clean report labels */
+
+  /* --- sf=0x00 --- */
+  testStep("Step 5", "Send 06A9 sf=0x00 in Extended Session - expect positive");
+  rawReq[4] = 0x00; diagResize(req, 5); diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req); testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { testStepFail("Result 5", "NRC=0x%02X (expected positive)", nrc); }
+  else
   {
-    testStep("Step positive", "Send 06A9 sf=0x%02X in Extended Session - expect positive", sf);
-
-    rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0x06; rawReq[3] = 0xA9; rawReq[4] = sf;
-    diagResize(req, 5);
-    diagSetPrimitiveData(req, rawReq, 5);
-    diagSendRequest(req);
-    testWaitForDiagResponse(req, 5000);
-    nrc = diagGetLastResponseCode(req);
-
-    if (nrc >= 0)
+    diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    if (len > 0 && readBuf[0]==0x71 && readBuf[2]==0x06 && readBuf[3]==0xA9)
     {
-      receivedNRC = nrc;
-      testStepFail("Result sf=0x%02X", "NRC=0x%02X (expected positive response)", sf, receivedNRC);
-    }
-    else
-    {
-      diagGetLastResponse(req, resp);
-      len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
-      if (len > 0)
-      {
-        if (readBuf[0] == 0x71 && readBuf[2] == 0x06 && readBuf[3] == 0xA9)
-        {
-          if (len >= 6 && readBuf[5] == sf)
-            testStepPass("Result sf=0x%02X", "06A9 sf=0x%02X: positive 71 01 06 A9 XX %02X, len=%d",
-                         sf, sf, readBuf[5], len);
-          else if (len >= 5)
-            testStepPass("Result sf=0x%02X", "06A9 sf=0x%02X: positive 71 01 06 A9, byte[5]=0x%02X (expected 0x%02X), len=%d",
-                         sf, sf, (len>=6)?readBuf[5]:0xFF, sf, len);
-          else
-            testStepPass("Result sf=0x%02X", "06A9 sf=0x%02X: positive response, len=%d", sf, sf, len);
-        }
-        else
-          testStepFail("Result sf=0x%02X", "06A9 sf=0x%02X: unexpected header %02X %02X %02X %02X",
-                       sf, sf, readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
-      }
+      if (len >= 6 && readBuf[5] == 0x00)
+        testStepPass("Result 5", "06A9 sf=0x00: positive 71 01 06 A9 XX 00, len=%d", len);
       else
-        testStepFail("Result sf=0x%02X", "06A9 sf=0x%02X: no response, rc=%d", sf, sf, len);
+        testStepFail("Result 5", "06A9 sf=0x00: byte[5]=0x%02X (expected 0x00), len=%d", (len>=6)?readBuf[5]:0xFF, len);
     }
+    else if (len > 0) testStepFail("Result 5", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+    else              testStepFail("Result 5", "No response, rc=%d", len);
+  }
+  testWaitForTimeout(2700);
 
-    sf++;
-    if (sf <= 0x06)
-      testWaitForTimeout(2700);  /* match pass report inter-call timing */
+  /* --- sf=0x01 --- */
+  testStep("Step 6", "Send 06A9 sf=0x01 in Extended Session - expect positive");
+  rawReq[4] = 0x01; diagResize(req, 5); diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req); testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { testStepFail("Result 6", "NRC=0x%02X (expected positive)", nrc); }
+  else
+  {
+    diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    if (len > 0 && readBuf[0]==0x71 && readBuf[2]==0x06 && readBuf[3]==0xA9)
+    {
+      if (len >= 6 && readBuf[5] == 0x01)
+        testStepPass("Result 6", "06A9 sf=0x01: positive 71 01 06 A9 XX 01, len=%d", len);
+      else
+        testStepFail("Result 6", "06A9 sf=0x01: byte[5]=0x%02X (expected 0x01), len=%d", (len>=6)?readBuf[5]:0xFF, len);
+    }
+    else if (len > 0) testStepFail("Result 6", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+    else              testStepFail("Result 6", "No response, rc=%d", len);
+  }
+  testWaitForTimeout(2700);
+
+  /* --- sf=0x02 --- */
+  testStep("Step 7", "Send 06A9 sf=0x02 in Extended Session - expect positive");
+  rawReq[4] = 0x02; diagResize(req, 5); diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req); testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { testStepFail("Result 7", "NRC=0x%02X (expected positive)", nrc); }
+  else
+  {
+    diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    if (len > 0 && readBuf[0]==0x71 && readBuf[2]==0x06 && readBuf[3]==0xA9)
+    {
+      if (len >= 6 && readBuf[5] == 0x02)
+        testStepPass("Result 7", "06A9 sf=0x02: positive 71 01 06 A9 XX 02, len=%d", len);
+      else
+        testStepFail("Result 7", "06A9 sf=0x02: byte[5]=0x%02X (expected 0x02), len=%d", (len>=6)?readBuf[5]:0xFF, len);
+    }
+    else if (len > 0) testStepFail("Result 7", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+    else              testStepFail("Result 7", "No response, rc=%d", len);
+  }
+  testWaitForTimeout(2700);
+
+  /* --- sf=0x03 --- */
+  testStep("Step 8", "Send 06A9 sf=0x03 in Extended Session - expect positive");
+  rawReq[4] = 0x03; diagResize(req, 5); diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req); testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { testStepFail("Result 8", "NRC=0x%02X (expected positive)", nrc); }
+  else
+  {
+    diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    if (len > 0 && readBuf[0]==0x71 && readBuf[2]==0x06 && readBuf[3]==0xA9)
+    {
+      if (len >= 6 && readBuf[5] == 0x03)
+        testStepPass("Result 8", "06A9 sf=0x03: positive 71 01 06 A9 XX 03, len=%d", len);
+      else
+        testStepFail("Result 8", "06A9 sf=0x03: byte[5]=0x%02X (expected 0x03), len=%d", (len>=6)?readBuf[5]:0xFF, len);
+    }
+    else if (len > 0) testStepFail("Result 8", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+    else              testStepFail("Result 8", "No response, rc=%d", len);
+  }
+  testWaitForTimeout(2700);
+
+  /* --- sf=0x04 --- */
+  testStep("Step 9", "Send 06A9 sf=0x04 in Extended Session - expect positive");
+  rawReq[4] = 0x04; diagResize(req, 5); diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req); testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { testStepFail("Result 9", "NRC=0x%02X (expected positive)", nrc); }
+  else
+  {
+    diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    if (len > 0 && readBuf[0]==0x71 && readBuf[2]==0x06 && readBuf[3]==0xA9)
+    {
+      if (len >= 6 && readBuf[5] == 0x04)
+        testStepPass("Result 9", "06A9 sf=0x04: positive 71 01 06 A9 XX 04, len=%d", len);
+      else
+        testStepFail("Result 9", "06A9 sf=0x04: byte[5]=0x%02X (expected 0x04), len=%d", (len>=6)?readBuf[5]:0xFF, len);
+    }
+    else if (len > 0) testStepFail("Result 9", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+    else              testStepFail("Result 9", "No response, rc=%d", len);
+  }
+  testWaitForTimeout(2700);
+
+  /* --- sf=0x05 --- */
+  testStep("Step 10", "Send 06A9 sf=0x05 in Extended Session - expect positive");
+  rawReq[4] = 0x05; diagResize(req, 5); diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req); testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { testStepFail("Result 10", "NRC=0x%02X (expected positive)", nrc); }
+  else
+  {
+    diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    if (len > 0 && readBuf[0]==0x71 && readBuf[2]==0x06 && readBuf[3]==0xA9)
+    {
+      if (len >= 6 && readBuf[5] == 0x05)
+        testStepPass("Result 10", "06A9 sf=0x05: positive 71 01 06 A9 XX 05, len=%d", len);
+      else
+        testStepFail("Result 10", "06A9 sf=0x05: byte[5]=0x%02X (expected 0x05), len=%d", (len>=6)?readBuf[5]:0xFF, len);
+    }
+    else if (len > 0) testStepFail("Result 10", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+    else              testStepFail("Result 10", "No response, rc=%d", len);
+  }
+  testWaitForTimeout(2700);
+
+  /* --- sf=0x06 --- */
+  testStep("Step 11", "Send 06A9 sf=0x06 in Extended Session - expect positive");
+  rawReq[4] = 0x06; diagResize(req, 5); diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req); testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { testStepFail("Result 11", "NRC=0x%02X (expected positive)", nrc); }
+  else
+  {
+    diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    if (len > 0 && readBuf[0]==0x71 && readBuf[2]==0x06 && readBuf[3]==0xA9)
+    {
+      if (len >= 6 && readBuf[5] == 0x06)
+        testStepPass("Result 11", "06A9 sf=0x06: positive 71 01 06 A9 XX 06, len=%d", len);
+      else
+        testStepFail("Result 11", "06A9 sf=0x06: byte[5]=0x%02X (expected 0x06), len=%d", (len>=6)?readBuf[5]:0xFF, len);
+    }
+    else if (len > 0) testStepFail("Result 11", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+    else              testStepFail("Result 11", "No response, rc=%d", len);
   }
 
   /*==========================================================
