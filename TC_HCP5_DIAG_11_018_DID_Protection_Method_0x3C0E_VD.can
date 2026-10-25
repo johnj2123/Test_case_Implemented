@@ -86,6 +86,12 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
 
   testWaitForTimeout(500);
 
+  /* DoIP activation line must be inactive before any session transitions on VD */
+  DoIPActivationLineInactive();
+  testStepPass("Precondition", "DoIP activation line inactive");
+
+  testWaitForTimeout(500);
+
   /* Lock SFD on VD */
   rc = SetExtendedDiagnosticSession_VD(3000);
   if (rc != 0) { testStepFail("Precondition", "Failed to enter Extended Session (VD) for SFD lock"); return; }
