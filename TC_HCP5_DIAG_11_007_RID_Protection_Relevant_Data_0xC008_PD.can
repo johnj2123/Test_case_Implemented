@@ -28,6 +28,7 @@ includes
     4. Session reset: Report does Default -> Extended between NRC group and
        positive group. Script follows this pattern.
 
+
   Tipo byte (C008 request byte[4]) mapping:
     0x01 = FAS  (Frontend Access Service)
     0x02 = FAS  (Frontend Access Service - challenge request)
@@ -101,7 +102,6 @@ testcase TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD()
 
   if (nrc >= 0)
   {
-    len = -(0x100 + nrc);
     receivedNRC = nrc;
     if (receivedNRC == 0x31)
       testStepPass("Result 1", "NRC 0x31 (requestOutOfRange) received as expected in Default session");
