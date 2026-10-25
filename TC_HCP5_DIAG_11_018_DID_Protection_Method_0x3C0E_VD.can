@@ -8,19 +8,30 @@ includes
   Test Case : TC_HCP5_DIAG_11_018_DID_Protection_Method_$3C0E_VD
   Domain     : VD (HCP5_Diagnostics_VD)
   Purpose    : Verifies DID 0x3C0E (Protection Method) read access per session:
-               - Default Session   -> positive response, Data = 0x03
-               - Extended Session  -> positive response, Data = 0x03
+               - Default Session    -> positive response, Data = 0x03
+               - Extended Session   -> positive response, Data = 0x03
                - Programming Session -> negative response (DID not available)
 
   NOTE - Deviations from spec (see diff_between_spec_report.xlsx rows 44-45):
     1. Spec step 4: "Enter ECU Programming Session 0x02."
-       Report does: Extended -> SetExtendedSevice (sub-function unlock, ~1775ms)
-       -> Programming. SetProgrammingDiagnosticSession_VD() encapsulates this
-       internally using the SetExtendedSevice typed object. Report also calls
-       ClearDTC before Programming entry; script uses UdsClearDTC_VD() for this.
+       Pass report sequence: Extended -> SetExtendedSevice routine (31 03 A0 02,
+       ~1775ms response) -> Programming (10 02). The SetExtendedSevice routine
+       is an ECU-specific unlock required before Programming on VD.
+       SetProgrammingDiagnosticSession_VD() only sends 10 02 — it does NOT
+       send the 31 03 A0 02 routine internally. Script sends it explicitly as
+       a raw wildcard request using HCP5_Diag_VD.SetExtendedSevice typed object
+       before calling SetProgrammingDiagnosticSession_VD().
+       UdsClearDTC_VD() is also called before Programming entry as per report.
     2. Spec step 5: NRC code not specified ("not available in this session").
        Report only checks that a Negative Response is received — no specific
        NRC byte verified. Script accepts any NRC and logs the value.
+
+  Failure analysis (run report 2026-10-25):
+    - Step 4 failed: SetProgrammingDiagnosticSession_VD rc=-3 (NRC received).
+      Root cause: ECU rejected 10 02 because SetExtendedSevice unlock routine
+      (31 03 A0 02) was not sent beforehand. Fix: send it explicitly first.
+    - Step 5 then ran in Extended session (Programming not entered) and got
+      a positive response instead of NRC. Resolved by fixing step 4.
 
   Preconditions:
     1. Clamp 30 enabled
@@ -34,22 +45,28 @@ includes
     1. Read DID 0x3C0E in Default Session   -> expect 62 3C 0E 03
     2. Enter Extended Session 0x03
     3. Read DID 0x3C0E in Extended Session  -> expect 62 3C 0E 03
-    4. Enter Programming Session 0x02 (via Extended -> Programming)
+    4. ClearDTC -> Extended -> SetExtendedSevice (31 03 A0 02) -> Programming
     5. Read DID 0x3C0E in Programming       -> expect Negative Response
 
-  Post-Conditions: none
+  Post-Conditions: recover to Default -> Extended
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
 {
-  diagRequest  HCP5_Diag_VD.* req;
-  diagResponse HCP5_Diag_VD.* resp;
+  diagRequest  HCP5_Diag_VD.*              req;
+  diagResponse HCP5_Diag_VD.*             resp;
+  diagRequest  HCP5_Diag_VD.SetExtendedSevice  extSevReq;
+  diagResponse HCP5_Diag_VD.SetExtendedSevice  extSevResp;
 
   byte    rawReq[8];
+  byte    rawExtSev[4];
   byte    readBuf[4095];
   byte    dtcGroup[3];
   long    len;
   long    rc;
   long    receivedNRC;
+  int     i;
+  char    hexStr[256];
+  char    tmp[8];
 
   write("=== TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD START ===");
 
@@ -93,7 +110,6 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
     STEP 1
     Read DID 0x3C0E in Default Session
     Expected: 62 3C 0E 03 (Data = 0x03)
-    Report: Data Bytes [1] 03 pass
   ======================================================*/
   testStep("Step 1", "Read DID 0x3C0E in Default Session - expect 62 3C 0E 03");
 
@@ -107,18 +123,34 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
   if (rc >= 0)
   {
     testStepFail("Result 1", "NRC=0x%02X received (expected positive 62 3C 0E 03)", rc);
+    testStepFail("Response 1", "7F 22 %02X", rc);
   }
   else
   {
     diagGetLastResponse(req, resp);
     len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    snprintf(hexStr, 256, "");
+    for (i = 0; i < len && i < 16; i++)
+    {
+      snprintf(tmp, 8, "%02X ", readBuf[i]);
+      strncat(hexStr, tmp, 256);
+    }
     if (len >= 4 && readBuf[0]==0x62 && readBuf[1]==0x3C && readBuf[2]==0x0E && readBuf[3]==0x03)
+    {
       testStepPass("Result 1", "DID 0x3C0E = 62 3C 0E 03 (Data=0x03) in Default Session");
+      testStepPass("Response 1", "%s", hexStr);
+    }
     else if (len >= 4)
+    {
       testStepFail("Result 1", "DID 0x3C0E = %02X %02X %02X %02X (expected 62 3C 0E 03)",
                    readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+      testStepFail("Response 1", "%s", hexStr);
+    }
     else
+    {
       testStepFail("Result 1", "DID 0x3C0E read failed, len=%d", len);
+      testStepFail("Response 1", "no data");
+    }
   }
 
   testWaitForTimeout(300);
@@ -141,7 +173,6 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
     STEP 3
     Read DID 0x3C0E in Extended Session
     Expected: 62 3C 0E 03 (Data = 0x03)
-    Report: Data Bytes [1] 03 pass
   ======================================================*/
   testStep("Step 3", "Read DID 0x3C0E in Extended Session - expect 62 3C 0E 03");
 
@@ -155,18 +186,34 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
   if (rc >= 0)
   {
     testStepFail("Result 3", "NRC=0x%02X received (expected positive 62 3C 0E 03)", rc);
+    testStepFail("Response 3", "7F 22 %02X", rc);
   }
   else
   {
     diagGetLastResponse(req, resp);
     len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    snprintf(hexStr, 256, "");
+    for (i = 0; i < len && i < 16; i++)
+    {
+      snprintf(tmp, 8, "%02X ", readBuf[i]);
+      strncat(hexStr, tmp, 256);
+    }
     if (len >= 4 && readBuf[0]==0x62 && readBuf[1]==0x3C && readBuf[2]==0x0E && readBuf[3]==0x03)
+    {
       testStepPass("Result 3", "DID 0x3C0E = 62 3C 0E 03 (Data=0x03) in Extended Session");
+      testStepPass("Response 3", "%s", hexStr);
+    }
     else if (len >= 4)
+    {
       testStepFail("Result 3", "DID 0x3C0E = %02X %02X %02X %02X (expected 62 3C 0E 03)",
                    readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+      testStepFail("Response 3", "%s", hexStr);
+    }
     else
+    {
       testStepFail("Result 3", "DID 0x3C0E read failed, len=%d", len);
+      testStepFail("Response 3", "no data");
+    }
   }
 
   testWaitForTimeout(250);
@@ -174,33 +221,70 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
   /*======================================================
     STEP 4
     Enter Programming Session 0x02
-    Report sequence: ClearDTC -> wait -> Extended -> SetExtendedSevice -> Programming
-    SetProgrammingDiagnosticSession_VD() encapsulates Extended + SetExtendedSevice internally.
-    UdsClearDTC_VD() called first as per report.
+    Report sequence:
+      1. ClearDTC
+      2. wait 3000ms
+      3. Extended session
+      4. SetExtendedSevice routine: 31 03 A0 02 (~1775ms response)
+      5. Programming session: 10 02
+    Fix vs previous run: SetExtendedSevice (31 03 A0 02) must be sent
+    explicitly before Programming — ECU rejects 10 02 without it.
   ======================================================*/
-  testStep("Step 4", "Enter Programming Session 0x02 (ClearDTC -> Extended -> Programming)");
+  testStep("Step 4", "Enter Programming Session (ClearDTC -> Extended -> SetExtendedSevice -> Programming)");
 
-  /* ClearDTC (all DTCs: group 0xFF FF FF) as per report */
+  /* ClearDTC — group 0xFF FF FF (all DTCs) */
   dtcGroup[0] = 0xFF; dtcGroup[1] = 0xFF; dtcGroup[2] = 0xFF;
   rc = UdsClearDTC_VD(dtcGroup, 3, 5000);
-  if (rc != 0)
-    write("WARNING: UdsClearDTC_VD returned %d (non-critical, continuing)", rc);
+  write("TC_018 Step 4: UdsClearDTC_VD rc=%d", rc);
 
-  testWaitForTimeout(3000);  /* report waits 3000ms after ClearDTC */
+  testWaitForTimeout(3000);
 
-  /* Re-enter Extended before Programming */
+  /* Re-enter Extended */
   rc = SetExtendedDiagnosticSession_VD(3000);
   if (rc != 0) { testStepFail("Result 4", "Failed to enter Extended Session before Programming"); return; }
 
   testWaitForTimeout(250);
 
-  /* Enter Programming — library uses SetExtendedSevice typed object internally */
+  /* Send SetExtendedSevice unlock routine: 31 03 A0 02
+     This is mandatory before 10 02 on VD — ECU returns NRC without it.
+     Pass report shows ~1775ms response time — use 5000ms timeout. */
+  rawExtSev[0] = 0x31; rawExtSev[1] = 0x03; rawExtSev[2] = 0xA0; rawExtSev[3] = 0x02;
+  diagResize(extSevReq, 4);
+  diagSetPrimitiveData(extSevReq, rawExtSev, 4);
+  diagSendRequest(extSevReq);
+  testWaitForDiagResponse(extSevReq, 5000);
+  rc = diagGetLastResponseCode(extSevReq);
+
+  if (rc >= 0)
+  {
+    testStepFail("Result 4", "SetExtendedSevice (31 03 A0 02) NRC=0x%02X (expected positive)", rc);
+    testStepFail("Response 4a", "7F 31 %02X", rc);
+    return;
+  }
+  else
+  {
+    diagGetLastResponse(extSevReq, extSevResp);
+    len = diagGetPrimitiveData(extSevResp, readBuf, elcount(readBuf));
+    snprintf(hexStr, 256, "");
+    for (i = 0; i < len && i < 8; i++)
+    {
+      snprintf(tmp, 8, "%02X ", readBuf[i]);
+      strncat(hexStr, tmp, 256);
+    }
+    testStepPass("Response 4a", "SetExtendedSevice: %s", hexStr);
+  }
+
+  /* Now enter Programming session */
   rc = SetProgrammingDiagnosticSession_VD(5000);
   if (rc != 0)
+  {
     testStepFail("Result 4", "SetProgrammingDiagnosticSession_VD failed, rc=%d", rc);
-  else
-    testStepPass("Result 4", "Programming Session 0x02 active");
+    testStepFail("Response 4b", "no response (rc=%d)", rc);
+    return;
+  }
 
+  testStepPass("Result 4", "Programming Session 0x02 active");
+  testStepPass("Response 4b", "50 02 (Programming session entered)");
   testWaitForTimeout(250);
 
   /*======================================================
@@ -220,25 +304,29 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
 
   if (rc >= 0)
   {
-    /* Negative response: diagGetLastResponseCode returns NRC as positive value */
+    /* diagGetLastResponseCode returns NRC as non-negative when NR received */
     receivedNRC = rc;
-    write("TC_018 Step 5: NRC=0x%02X received as expected (DID not available in Programming)", receivedNRC);
-    testStepPass("Result 5", "Negative response received (NRC=0x%02X) - DID 0x3C0E not available in Programming", receivedNRC);
+    testStepPass("Result 5", "Negative response NRC=0x%02X received (DID 0x3C0E not available in Programming)", receivedNRC);
+    testStepPass("Response 5", "7F 22 %02X", receivedNRC);
   }
   else
   {
-    /* Positive response — unexpected */
     diagGetLastResponse(req, resp);
     len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    snprintf(hexStr, 256, "");
+    for (i = 0; i < len && i < 16; i++)
+    {
+      snprintf(tmp, 8, "%02X ", readBuf[i]);
+      strncat(hexStr, tmp, 256);
+    }
     testStepFail("Result 5", "Unexpected positive response in Programming Session, len=%d", len);
+    testStepFail("Response 5", "%s", hexStr);
   }
 
   /*==========================================================
-    POST-CONDITIONS
+    POST-CONDITIONS — recover to Extended
   ==========================================================*/
   testWaitForTimeout(500);
-
-  /* Return to Default Session */
   SetDefaultDiagnosticSession_VD(3000);
   testWaitForTimeout(200);
   SetExtendedDiagnosticSession_VD(3000);
