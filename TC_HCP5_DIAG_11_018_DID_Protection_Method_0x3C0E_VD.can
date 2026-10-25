@@ -233,9 +233,13 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
 
   testWaitForTimeout(3000);
 
-  /* Re-enter Extended */
+  /* Re-enter Extended, then TesterPresent before Programming (required — confirmed from TC_DIAG_05) */
   rc = SetExtendedDiagnosticSession_VD(3000);
   if (rc != 0) { testStepFail("Result 4", "Failed to enter Extended Session before Programming"); return; }
+
+  testWaitForTimeout(200);
+  SendTesterPresent();
+  testWaitForTimeout(100);
 
   testWaitForTimeout(500);
 
