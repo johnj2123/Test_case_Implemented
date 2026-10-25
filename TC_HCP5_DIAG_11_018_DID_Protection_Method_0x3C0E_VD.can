@@ -90,7 +90,18 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
   DoIPActivationLineInactive();
   testStepPass("Precondition", "DoIP activation line inactive");
 
-  testWaitForTimeout(500);
+  /* Set vehicle signals to stopped/inactive state — required for Programming session entry.
+     ECU returns NRC 0x22 (conditionsNotCorrect) if speed != 0 or VPE/propulsion active.
+     Pattern from TC_HCP5_DIAG_11_030/031 reference implementation. */
+  @sysvar::EthernetSignals::VehicleProtectedEnvironment_D_XIX_OTAMC_D_01_XIX_VLAN_FAS = 0;
+  @sysvar::EthernetSignals::MM_PropulsionSystemActive_XIX_OBD_04_XIX_VLAN_FAS          = 0;
+  @sysvar::EthernetSignals::VDSO_Vx3d_XIX_VDSO_05_XIX_VLAN_FAS                        = 1;
+  @sysvar::EthernetSignals::VDSO_Vx3dKmph_XIX_VDSO_05_XIX_VLAN_FAS                    = 1;
+  @sysvar::EthernetSignals::VDSO_Vx3dDisp_XIX_VDSO_05_XIX_VLAN_FAS                    = 1;
+  @sysvar::EthernetSignals::OBD_Driving_Cycle_XIX_OBD_03_XIX_VLAN_FAS                 = 0;
+  testStepPass("Precondition", "Vehicle signals: speed=0, VPE=none, PropulsionActive=0, DrivingCycle=0");
+
+  testWaitForTimeout(5000);  /* Allow ECU to process signal state before session work */
 
   /* Lock SFD on VD */
   rc = SetExtendedDiagnosticSession_VD(3000);
@@ -224,13 +235,11 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
   /*======================================================
     STEP 4
     Enter Programming Session 0x02
-    Pass report sequence: ClearDTC -> wait -> Extended -> SetExtendedSevice_RQ
-    (which is the 10 02 Programming session request via the database typed object)
-    -> Programming active.
-    SetProgrammingDiagnosticSession_VD() sends 10 02 via SetExtendedSevice typed
-    object internally — no separate routine call needed. Confirmed from TC_DIAG_05.
+    Pass report sequence: ClearDTC -> Default -> Extended -> TesterPresent
+    -> SetExtendedSevice routine (31 03 A0 02) -> Programming (10 02).
+    The 31 03 A0 02 routine is an ECU-specific prerequisite before 10 02 on VD.
   ======================================================*/
-  testStep("Step 4", "Enter Programming Session (ClearDTC -> Extended -> Programming)");
+  testStep("Step 4", "Enter Programming Session (ClearDTC -> Extended -> SetExtendedSevice -> Programming)");
 
   /* ClearDTC — group 0xFF FF FF (all DTCs) as per pass report */
   dtcGroup[0] = 0xFF; dtcGroup[1] = 0xFF; dtcGroup[2] = 0xFF;
@@ -239,9 +248,7 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
 
   testWaitForTimeout(3000);
 
-  /* Default -> Extended -> TesterPresent -> Programming
-     Pass report goes Default first (step 9 of preparation), then main test.
-     ECU requires Default session reset before accepting Programming transition. */
+  /* Default -> Extended -> TesterPresent -> SetExtendedSevice -> Programming */
   rc = SetDefaultDiagnosticSession_VD(3000);
   if (rc != 0) { testStepFail("Result 4", "Failed to enter Default Session before Programming"); return; }
 
@@ -254,14 +261,21 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
   SendTesterPresent();
   testWaitForTimeout(100);
 
-  testWaitForTimeout(500);
+  /* Send SetExtendedSevice routine 31 03 A0 02 — required ECU unlock before Programming on VD */
+  rawReq[0] = 0x31; rawReq[1] = 0x03; rawReq[2] = 0xA0; rawReq[3] = 0x02;
+  diagResize(req, 4);
+  diagSetPrimitiveData(req, rawReq, 4);
+  diagSendRequest(req);
+  rc = testWaitForDiagResponse(req, 5000);
+  write("TC_018 Step 4: SetExtendedSevice (31 03 A0 02) response rc=%d", rc);
+  testWaitForTimeout(300);
 
   /* Enter Programming session */
   rc = SetProgrammingDiagnosticSession_VD(5000);
   if (rc != 0)
   {
-    testStepFail("Result 4", "SetProgrammingDiagnosticSession_VD failed, NRC 0x22=conditionsNotCorrect — vehicle precondition not met", rc);
-    testStepFail("Response 4", "7F 10 22 (conditionsNotCorrect)", rc);
+    testStepFail("Result 4", "SetProgrammingDiagnosticSession_VD failed — NRC 0x22 means vehicle precondition not met");
+    testStepFail("Response 4", "7F 10 22 (conditionsNotCorrect)");
     return;
   }
 
