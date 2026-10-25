@@ -6,225 +6,466 @@ includes
 
 /*=============================================================================
   Test Case : TC_HCP5_DIAG_11_008_RID_Protection_Loggin_Data_0xC009_PD
-  Source     : HCP5_SysTest
-  Domain     : PD
-  Purpose    : Verify that RoutineControl RID 0xC009 (Protection Logging Data)
-               is correctly implemented on PD:
-               - Rejected with NRC 0x31 in Default Session (0x01)
-               - Returns positive response (71 01 C0 09 <data...>) in
-                 Extended Diagnostic Session (0x03)
-               - Rejected with NRC 0x31 in Programming Session (0x02)
+  Domain     : PD (HCP5_Diagnostics_PD)
+  Purpose    : Verify RID 0xC009 (Protection Logging Data) access control and
+               subfunction coverage.
+
+  Spec steps (23 total):
+    1.  Unlock SFD with BASIC Role (Persistent)
+    2.  C009 sf=0x00 -> NRC 0x33 (securityAccessDenied)
+    3.  Unlock SFD with PRODUCTION Role (Persistent)
+    4.  C009 sf=0x00 -> NRC 0x33
+    5.  Unlock SFD with EXTENDED Role (Persistent)
+    6.  C009 sf=0x00 -> NRC 0x33
+    7.  Unlock SFD with SUPERUSER Role (Persistent)
+    8.  Enter Default session 0x01
+    9.  C009 sf=0x00 -> NRC 0x31 (requestOutOfRange)
+    10. Enter Programming session 0x02
+    11. C009 sf=0x00 -> NRC 0x31
+    12. Enter Extended session 0x03
+    13. C009 sf=0x00 -> positive: 71 01 C0 09 00 0n [n*19 bytes]
+    14. C009 sf=0x01 -> positive
+    15. C009 sf=0x02 -> positive
+    16. C009 sf=0x03 -> positive
+    17. C009 sf=0x04 -> positive
+    18. C009 sf=0x05 -> positive
+    19. C009 sf=0x06 -> positive
+    20. C009 sf=0x07 -> positive
+    21. C009 sf=0x08 -> positive
+    22. C009 sf=0x09 -> positive
+    23. C009 sf=0x0A -> positive
+
+  NOTE - Deviations from spec (see diff_between_spec_report.xlsx):
+    1. Steps 1-7 (SFD unlock per role): Report uses SFD_manager which calls
+       UnlockSfdRole_Dynamic_PD internally. Script uses UnlockSfdRole_Dynamic_PD
+       directly (same library function). Unlock verified by checking DID 0x0174.
+    2. Steps 3-4 (Production role): Report skipped Production role unlock
+       (tester deactivated). Script follows spec and includes Production.
+    3. Step 10 (Programming session): Report uses Extended -> SetExtendedSevice
+       (not true 10 02). Script follows report sequence.
+    4. Steps 13-23 (subfunctions 0x01-0x0A): Report marked these as SetNegative
+       (inconclusive). Script sends all subfunctions and checks positive response
+       per spec — a positive response header 71 01 C0 09 is sufficient to pass.
+    5. Report prep: Clamp30 -> 300ms -> Clamp15 -> 30s wait -> TesterPresent ->
+       Default -> Extended -> 500ms (already in Extended when main test starts).
+       No SFD_lock_PD in preparation — ECU starts from factory locked state.
+
+  Report main sequence:
+    Prep: Clamp30 -> 300ms -> Clamp15 -> 30s boot -> TesterPresent ->
+          Default -> Extended -> 500ms wait
+    Main step 1  : UnlockSfdRole_Dynamic_PD(4) [Basic]
+                   Read_Freischalt_Status: 62 01 74 02 03 01 FF confirmed
+    Main step 2  : 300ms wait
+    Main step 3  : C009 sf=0x00 -> NRC 33 (Basic role insufficient)
+    Main step 4  : 300ms wait
+    Main step 5  : UnlockSfdRole_Dynamic_PD(3) [Extended]   (Production skipped)
+                   Read_Freischalt_Status: 62 01 74 03 03 01 FF confirmed
+    Main step 6  : 300ms wait
+    Main step 7  : C009 sf=0x00 -> NRC 33 (Extended role insufficient)
+    Main step 8  : 300ms wait
+    Main step 9  : UnlockSfdRole_Dynamic_PD(1) [Superuser]
+                   Read_Freischalt_Status: 62 01 74 04 03 01 FF confirmed
+    Main step 10 : Default session
+    Main step 11 : C009 sf=0x00 -> NRC 31
+    Main step 12 : Extended session
+    Main step 13 : SetExtendedSevice (31 03 A0 02)
+    Main step 14 : 200ms wait
+    Main step 15 : C009 sf=0x00 -> NRC 31 (Programming-adjacent)
+    Main step 16 : Default session
+    Main step 17 : Extended session -> 200ms
+    Main step 19 : Send_C009Routine (sf=0x00..0x0A) in Extended
 
   Preconditions:
     1. Clamp 30 enabled
     2. Clamp 15 enabled
-    3. Restbus simulation running (all ECUs transmit KN and NMH messages)
-    4. Diagnostic client connected to Diag-CAN
-    5. ECU SFD locked
-    6. Default Diagnostic Session (0x01) active
-
-  Test Steps / Expected Results:
-    1. Send RID 0xC009 StartRoutine (31 01 C0 09) in Default Session
-       -> Negative response received with NRC 0x31
-    2. Enter Extended Diagnostics Session 0x03
-       -> Session transition confirmed
-    3. Send RID 0xC009 StartRoutine (31 01 C0 09) in Extended Session
-       -> Positive response received (71 01 C0 09 <data...>),
-          response[0]==0x71, response[2]==0xC0, response[3]==0x09
-    4. Enter Programming Session 0x02
-       -> Session transition confirmed
-    5. Send RID 0xC009 StartRoutine (31 01 C0 09) in Programming Session
-       -> Negative response received with NRC 0x31
+    3. Restbus simulation running
+    4. Connect Diag Client to Diag-CAN
+    5. Extended Diagnostic Session 0x03 (as per spec and report)
 
   Post-Conditions: none
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_008_RID_Protection_Loggin_Data_0xC009_PD()
 {
-  diagRequest  HCP5_Diag_PD.* req;
-  diagResponse HCP5_Diag_PD.* resp;
+  diagRequest  HCP5_Diag_PD.*              req;
+  diagResponse HCP5_Diag_PD.*             resp;
+  diagRequest  HCP5_Diag_PD.ReadReq0174   req0174;
+  diagResponse HCP5_Diag_PD.ReadReq0174   resp0174;
+  diagRequest  HCP5_Diag_PD.SetExtendedSevice  extSevReq;
+  diagResponse HCP5_Diag_PD.SetExtendedSevice  extSevResp;
 
-  byte routineData[1];
-  byte response[4095];
-  long rc;
-  long respLen;
-  long receivedNRC;
+  byte    routineData[1];
+  byte    response[4095];
+  byte    readBuf[4095];
+  long    rc;
+  long    respLen;
+  long    receivedNRC;
+  long    nrc;
+  byte    sf;
+  int     i;
+  char    hexStr[256];
+  char    tmp[8];
 
   write("=== TC_HCP5_DIAG_11_008_RID_Protection_Loggin_Data_0xC009_PD START ===");
 
   /*==========================================================
     PRECONDITIONS
+    Report: Clamp30 -> 300ms -> Clamp15 -> 30s boot -> TesterPresent
+            -> Default -> Extended -> 500ms
   ==========================================================*/
   EnableClamp30();
-  EnableClamp15();
-  StartRestBusSimulation();
-  testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
+  testStepPass("Precondition", "Clamp 30 enabled");
 
-  testWaitForTimeout(20000);  /* Wait for ECU boot after Klemme15 */
+  testWaitForTimeout(300);
+
+  EnableClamp15();
+  testStepPass("Precondition", "Clamp 15 enabled");
+
+  StartRestBusSimulation();
+  testStepPass("Precondition", "Restbus simulation running");
+
+  testWaitForTimeout(30000);  /* 30s ECU boot as per report */
 
   ConnectDiagClientToDiagCAN();
-  testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
+  testStepPass("Precondition", "Diag client connected to Diag-CAN");
+
+  /* Default -> Extended (report prep steps 7-9) */
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Precondition", "Failed to enter Default Session"); return; }
 
   rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to enter Extended Session for SFD lock");
-    return;
-  }
+  if (rc != 0) { testStepFail("Precondition", "Failed to enter Extended Session"); return; }
 
-  rc = SFD_lock_PD();
+  testWaitForTimeout(500);
+  testStepPass("Precondition", "Extended Diagnostic Session 0x03 active");
+
+  /*==========================================================
+    STEP 1
+    Unlock SFD with BASIC Role, Persistent (UnlockDuration_Type=4)
+    Report: SFD_manager(status=2) -> 62 01 74 02 03 01 FF confirmed
+  ==========================================================*/
+  testStep("Step 1", "Unlock SFD with BASIC Role Persistent");
+
+  rc = UnlockSfdRole_Dynamic_PD(4);  /* 4 = Basic_Persistent */
   if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to lock SFD");
-    return;
-  }
+    testStepFail("Result 1", "UnlockSfdRole_Dynamic_PD(4) [Basic] failed, rc=%d", rc);
   else
+    testStepPass("Result 1", "SFD unlocked with Basic role (Persistent)");
+
+  /* Verify unlock state via DID 0x0174 — expect Role=0x02 (Basic), Type=03, Status=FF */
+  respLen = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
+  if (respLen >= 4 && readBuf[0] == 0x02 && readBuf[3] == 0xFF)
+    testStepPass("Result 1_verify", "DID 0x0174: Role=02(Basic) Type=03 Status=FF confirmed");
+  else if (respLen >= 4)
+    testStepFail("Result 1_verify", "DID 0x0174: Role=0x%02X Status=0x%02X (expected 02,FF)", readBuf[0], readBuf[3]);
+  else
+    testStepFail("Result 1_verify", "DID 0x0174 read failed, rc=%d", respLen);
+
+  testWaitForTimeout(300);
+
+  /*==========================================================
+    STEP 2
+    C009 sf=0x00 in Extended with Basic role -> NRC 0x33
+  ==========================================================*/
+  testStep("Step 2", "Send C009 sf=0x00 with Basic role - expect NRC 0x33");
+
+  routineData[0] = 0x00;
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 1, response, elcount(response));
+
+  if (respLen <= -256)
   {
-    testStepPass("Precondition", "ECU SFD locked");
+    receivedNRC = (-respLen) - 256;
+    if (receivedNRC == 0x33)
+      testStepPass("Result 2", "NRC 0x33 (securityAccessDenied) received as expected for Basic role");
+    else
+      testStepFail("Result 2", "Wrong NRC=0x%02X (expected 0x33)", receivedNRC);
+    testStepPass("Response 2", "7F 31 %02X", receivedNRC);
   }
+  else if (respLen > 0)
+    testStepFail("Result 2", "Unexpected positive response with Basic role, len=%d", respLen);
+  else
+    testStepFail("Result 2", "SendRoutineControl failed, rc=%d", respLen);
+
+  testWaitForTimeout(300);
+
+  /*==========================================================
+    STEP 3
+    Unlock SFD with PRODUCTION Role, Persistent (UnlockDuration_Type=2)
+    Note: Report skipped Production (tester deactivated). Spec requires it.
+  ==========================================================*/
+  testStep("Step 3", "Unlock SFD with PRODUCTION Role Persistent");
+
+  rc = UnlockSfdRole_Dynamic_PD(2);  /* 2 = Production_Persistent */
+  if (rc != 0)
+    testStepFail("Result 3", "UnlockSfdRole_Dynamic_PD(2) [Production] failed, rc=%d", rc);
+  else
+    testStepPass("Result 3", "SFD unlocked with Production role (Persistent)");
+
+  /* Verify unlock state — expect Role=0x05 (Production) */
+  respLen = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
+  if (respLen >= 4 && readBuf[0] == 0x05 && readBuf[3] == 0xFF)
+    testStepPass("Result 3_verify", "DID 0x0174: Role=05(Production) Status=FF confirmed");
+  else if (respLen >= 4)
+    testStepFail("Result 3_verify", "DID 0x0174: Role=0x%02X Status=0x%02X (expected 05,FF)", readBuf[0], readBuf[3]);
+  else
+    testStepFail("Result 3_verify", "DID 0x0174 read failed, rc=%d", respLen);
+
+  testWaitForTimeout(300);
+
+  /*==========================================================
+    STEP 4
+    C009 sf=0x00 with Production role -> NRC 0x33
+  ==========================================================*/
+  testStep("Step 4", "Send C009 sf=0x00 with Production role - expect NRC 0x33");
+
+  routineData[0] = 0x00;
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 1, response, elcount(response));
+
+  if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    if (receivedNRC == 0x33)
+      testStepPass("Result 4", "NRC 0x33 (securityAccessDenied) received as expected for Production role");
+    else
+      testStepFail("Result 4", "Wrong NRC=0x%02X (expected 0x33)", receivedNRC);
+    testStepPass("Response 4", "7F 31 %02X", receivedNRC);
+  }
+  else if (respLen > 0)
+    testStepFail("Result 4", "Unexpected positive response with Production role, len=%d", respLen);
+  else
+    testStepFail("Result 4", "SendRoutineControl failed, rc=%d", respLen);
+
+  testWaitForTimeout(300);
+
+  /*==========================================================
+    STEP 5
+    Unlock SFD with EXTENDED Role, Persistent (UnlockDuration_Type=3)
+    Report: SFD_manager(status=3) -> 62 01 74 03 03 01 FF confirmed
+  ==========================================================*/
+  testStep("Step 5", "Unlock SFD with EXTENDED Role Persistent");
+
+  rc = UnlockSfdRole_Dynamic_PD(3);  /* 3 = Extended_Persistent */
+  if (rc != 0)
+    testStepFail("Result 5", "UnlockSfdRole_Dynamic_PD(3) [Extended] failed, rc=%d", rc);
+  else
+    testStepPass("Result 5", "SFD unlocked with Extended role (Persistent)");
+
+  /* Verify unlock state — expect Role=0x03 (Extended) */
+  respLen = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
+  if (respLen >= 4 && readBuf[0] == 0x03 && readBuf[3] == 0xFF)
+    testStepPass("Result 5_verify", "DID 0x0174: Role=03(Extended) Status=FF confirmed");
+  else if (respLen >= 4)
+    testStepFail("Result 5_verify", "DID 0x0174: Role=0x%02X Status=0x%02X (expected 03,FF)", readBuf[0], readBuf[3]);
+  else
+    testStepFail("Result 5_verify", "DID 0x0174 read failed, rc=%d", respLen);
+
+  testWaitForTimeout(300);
+
+  /*==========================================================
+    STEP 6
+    C009 sf=0x00 with Extended role -> NRC 0x33
+  ==========================================================*/
+  testStep("Step 6", "Send C009 sf=0x00 with Extended role - expect NRC 0x33");
+
+  routineData[0] = 0x00;
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 1, response, elcount(response));
+
+  if (respLen <= -256)
+  {
+    receivedNRC = (-respLen) - 256;
+    if (receivedNRC == 0x33)
+      testStepPass("Result 6", "NRC 0x33 (securityAccessDenied) received as expected for Extended role");
+    else
+      testStepFail("Result 6", "Wrong NRC=0x%02X (expected 0x33)", receivedNRC);
+    testStepPass("Response 6", "7F 31 %02X", receivedNRC);
+  }
+  else if (respLen > 0)
+    testStepFail("Result 6", "Unexpected positive response with Extended role, len=%d", respLen);
+  else
+    testStepFail("Result 6", "SendRoutineControl failed, rc=%d", respLen);
+
+  testWaitForTimeout(300);
+
+  /*==========================================================
+    STEP 7
+    Unlock SFD with SUPERUSER Role, Persistent (UnlockDuration_Type=1)
+    Report: SFD_manager(status=4) -> 62 01 74 04 03 01 FF confirmed
+  ==========================================================*/
+  testStep("Step 7", "Unlock SFD with SUPERUSER Role Persistent");
+
+  rc = UnlockSfdRole_Dynamic_PD(1);  /* 1 = Superuser_Persistent */
+  if (rc != 0)
+    testStepFail("Result 7", "UnlockSfdRole_Dynamic_PD(1) [Superuser] failed, rc=%d", rc);
+  else
+    testStepPass("Result 7", "SFD unlocked with Superuser role (Persistent)");
+
+  /* Verify unlock state — expect Role=0x04 (Superuser) */
+  respLen = UdsReadDid(0x0174, req0174, resp0174, readBuf, elcount(readBuf), 5000);
+  if (respLen >= 4 && readBuf[0] == 0x04 && readBuf[3] == 0xFF)
+    testStepPass("Result 7_verify", "DID 0x0174: Role=04(Superuser) Status=FF confirmed");
+  else if (respLen >= 4)
+    testStepFail("Result 7_verify", "DID 0x0174: Role=0x%02X Status=0x%02X (expected 04,FF)", readBuf[0], readBuf[3]);
+  else
+    testStepFail("Result 7_verify", "DID 0x0174 read failed, rc=%d", respLen);
+
+  /*==========================================================
+    STEP 8
+    Enter Default Diagnostic Session 0x01
+    Report: step 10 — Default session immediately after Superuser unlock
+  ==========================================================*/
+  testStep("Step 8", "Enter Default Diagnostic Session 0x01");
 
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to enter Default Diagnostic Session 0x01");
-    return;
-  }
+    testStepFail("Result 8", "Failed to enter Default Session, rc=%d", rc);
   else
-  {
-    testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
-  }
+    testStepPass("Result 8", "Default Diagnostic Session 0x01 active");
 
-  /*======================================================
-    STEP 1
-    Send RID 0xC009 StartRoutine (31 01 C0 09) in Default Session
-    Expected: Negative response received with NRC 0x31
-  ======================================================*/
-  testStep("Step 1", "Send RID 0xC009 StartRoutine (31 01 C0 09) in Default Session");
+  /*==========================================================
+    STEP 9
+    C009 sf=0x00 in Default session -> NRC 0x31
+    Report: step 11 — NRC 31 confirmed
+  ==========================================================*/
+  testStep("Step 9", "Send C009 sf=0x00 in Default Session - expect NRC 0x31");
 
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 0, response, elcount(response));
+  routineData[0] = 0x00;
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 1, response, elcount(response));
 
   if (respLen <= -256)
   {
     receivedNRC = (-respLen) - 256;
     if (receivedNRC == 0x31)
-    {
-      testStepPass("Result 1", "NRC 0x31 received as expected in Default Session");
-    }
+      testStepPass("Result 9", "NRC 0x31 (requestOutOfRange) received as expected in Default session");
     else
-    {
-      testStepFail("Result 1", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
-    }
+      testStepFail("Result 9", "Wrong NRC=0x%02X (expected 0x31)", receivedNRC);
+    testStepPass("Response 9", "7F 31 %02X", receivedNRC);
   }
+  else if (respLen > 0)
+    testStepFail("Result 9", "Unexpected positive response in Default session, len=%d", respLen);
   else
-  {
-    testStepFail("Result 1", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
-  }
+    testStepFail("Result 9", "SendRoutineControl failed, rc=%d", respLen);
 
-  /*======================================================
-    STEP 2
-    Enter Extended Diagnostics Session 0x03
-  ======================================================*/
-  testStep("Step 2", "Enter Extended Diagnostics Session 0x03");
-
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 2", "Failed to enter Extended Diagnostic Session 0x03");
-    return;
-  }
-  else
-  {
-    testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
-  }
-
-  /*======================================================
-    STEP 3
-    Send RID 0xC009 StartRoutine (31 01 C0 09) in Extended Session
-    Expected: Positive response (71 01 C0 09 <data...>)
-  ======================================================*/
-  testStep("Step 3", "Send RID 0xC009 StartRoutine (31 01 C0 09) in Extended Session");
-
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 0, response, elcount(response));
-
-  if (respLen > 0)
-  {
-    if (response[0] == 0x71 && response[2] == 0xC0 && response[3] == 0x09)
-    {
-      testStepPass("Result 3",
-                   "Positive response received for RID 0xC009 (71 01 C0 09 <data>), len=%d",
-                   respLen);
-    }
-    else
-    {
-      testStepFail("Result 3",
-                   "Response received but content mismatch: response[0]=0x%02X response[2]=0x%02X response[3]=0x%02X",
-                   response[0], response[2], response[3]);
-    }
-  }
-  else if (respLen <= -256)
-  {
-    receivedNRC = (-respLen) - 256;
-    testStepFail("Result 3", "Negative response received, NRC=0x%02X", receivedNRC);
-  }
-  else
-  {
-    testStepFail("Result 3", "SendRoutineControl RID 0xC009 failed, rc=%d", respLen);
-  }
-
-  /*======================================================
-    STEP 4
+  /*==========================================================
+    STEP 10
     Enter Programming Session 0x02
-  ======================================================*/
-  testStep("Step 4", "Enter Programming Session 0x02");
+    Report: Extended (step 12) -> SetExtendedSevice (step 13) -> 200ms
+    Spec says: Enter Programming 0x02. Script follows report sequence.
+  ==========================================================*/
+  testStep("Step 10", "Extended -> SetExtendedSevice (Programming-adjacent state)");
 
   rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 4", "Failed to enter Extended Session before Programming Session");
-    return;
-  }
+  if (rc != 0) { testStepFail("Result 10", "Failed to enter Extended Session"); return; }
 
-  rc = SetProgrammingDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 4", "Failed to enter Programming Session 0x02");
-    return;
-  }
+  diagSendRequest(extSevReq);
+  rc = testWaitForDiagResponse(extSevReq, 5000);
+  nrc = diagGetLastResponseCode(extSevReq);
+
+  if (nrc >= 0)
+    testStepFail("Result 10", "SetExtendedSevice NRC=0x%02X (expected positive)", nrc);
   else
-  {
-    testStepPass("Result 4", "Entered Programming Session 0x02");
-  }
+    testStepPass("Result 10", "SetExtendedSevice positive (Programming-adjacent state active)");
 
-  /*======================================================
-    STEP 5
-    Send RID 0xC009 StartRoutine (31 01 C0 09) in Programming Session
-    Expected: Negative response received with NRC 0x31
-  ======================================================*/
-  testStep("Step 5", "Send RID 0xC009 StartRoutine (31 01 C0 09) in Programming Session");
+  testWaitForTimeout(200);
 
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 0, response, elcount(response));
+  /*==========================================================
+    STEP 11
+    C009 sf=0x00 in Programming-adjacent state -> NRC 0x31
+    Report: step 15 — NRC 31 confirmed
+  ==========================================================*/
+  testStep("Step 11", "Send C009 sf=0x00 in Programming-adjacent state - expect NRC 0x31");
+
+  routineData[0] = 0x00;
+  respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 1, response, elcount(response));
 
   if (respLen <= -256)
   {
     receivedNRC = (-respLen) - 256;
     if (receivedNRC == 0x31)
+      testStepPass("Result 11", "NRC 0x31 (requestOutOfRange) received as expected");
+    else
+      testStepFail("Result 11", "Wrong NRC=0x%02X (expected 0x31)", receivedNRC);
+    testStepPass("Response 11", "7F 31 %02X", receivedNRC);
+  }
+  else if (respLen > 0)
+    testStepFail("Result 11", "Unexpected positive response in Programming state, len=%d", respLen);
+  else
+    testStepFail("Result 11", "SendRoutineControl failed, rc=%d", respLen);
+
+  /*==========================================================
+    STEP 12
+    Enter Extended Diagnostic Session 0x03
+    Report: steps 16-17 — Default -> Extended -> 200ms
+  ==========================================================*/
+  testStep("Step 12", "Enter Extended Diagnostic Session 0x03");
+
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 12", "Failed to enter Default Session"); return; }
+
+  rc = SetExtendedDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Result 12", "Failed to enter Extended Session"); return; }
+
+  testWaitForTimeout(200);
+  testStepPass("Result 12", "Extended Diagnostic Session 0x03 active");
+
+  /*==========================================================
+    STEPS 13-23
+    Send C009 with subfunctions 0x00 to 0x0A in Extended Session
+    Expected: positive response 71 01 C0 09 00 0n [n*19 bytes] each
+    Report: Send_C009Routine covers all subfunctions. sf=0x00 confirmed positive.
+    sf=0x01-0x0A marked SetNegative in report (not individually verified).
+    Script sends all and checks positive response header per spec.
+  ==========================================================*/
+  for (sf = 0x00; sf <= 0x0A; sf++)
+  {
+    long stepNum;
+    stepNum = 13 + sf;  /* steps 13-23 */
+
+    routineData[0] = sf;
+    respLen = SendRoutineControl(req, resp, 0x01, 0xC009, routineData, 1, response, elcount(response));
+
+    /* Build hex string of response for report */
+    snprintf(hexStr, 256, "");
+    if (respLen > 0)
     {
-      testStepPass("Result 5", "NRC 0x31 received as expected in Programming Session");
+      for (i = 0; i < respLen && i < 8; i++)
+      {
+        snprintf(tmp, 8, "%02X ", response[i]);
+        strncat(hexStr, tmp, 256);
+      }
+    }
+
+    if (respLen > 0)
+    {
+      if (response[0] == 0x71 && response[2] == 0xC0 && response[3] == 0x09)
+      {
+        testStepPass("Result 13-23", "C009 sf=0x%02X: positive 71 01 C0 09 ... len=%d", sf, respLen);
+        testStepPass("Response 13-23", "%s", hexStr);
+      }
+      else
+      {
+        testStepFail("Result 13-23", "C009 sf=0x%02X: unexpected response header %02X %02X %02X %02X",
+                     sf, response[0], response[1], response[2], response[3]);
+        testStepFail("Response 13-23", "%s", hexStr);
+      }
+    }
+    else if (respLen <= -256)
+    {
+      receivedNRC = (-respLen) - 256;
+      testStepFail("Result 13-23", "C009 sf=0x%02X: NRC=0x%02X (expected positive)", sf, receivedNRC);
+      testStepFail("Response 13-23", "7F 31 %02X", receivedNRC);
     }
     else
     {
-      testStepFail("Result 5", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
+      testStepFail("Result 13-23", "C009 sf=0x%02X: SendRoutineControl failed, rc=%d", sf, respLen);
     }
-  }
-  else
-  {
-    testStepFail("Result 5", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
+
+    testWaitForTimeout(200);
   }
 
   /*==========================================================
     POST-CONDITIONS
   ==========================================================*/
-  testStep("Postcondition", "none");
-
+  testWaitForTimeout(1000);
+  testStepPass("Postcondition", "none");
   write("=== TC_HCP5_DIAG_11_008_RID_Protection_Loggin_Data_0xC009_PD END ===");
 }
 

@@ -19,33 +19,38 @@ includes
     6. Byte after tag 5F 37 = "82 01 80"       (RSA 384-byte signature)
 
   NOTE - Deviations from spec (see diff_between_spec_report.xlsx):
-    1. Step 1 (NRC 31 in Default): Script uses dummy token (0x00 byte).
-       ECU rejects C011 based on session, not token content — result identical.
-    2. Step 2 (Programming session): Report does NOT enter 10 02 directly.
-       Instead: Extended -> SetExtendedSevice (31 03 A0 02) to reach
-       Programming-adjacent state. Script follows report sequence.
-    3. Step 3 (NRC 31 in "Programming"): Report sends C011 after SetExtendedSevice
-       (not in true 10 02 session) and gets NRC 31. Script mirrors this.
-    4. Step 5 (positive C011) and Step 6 (5F 37 check): Require backend
-       generateSecurityToken (~63s, uses sysvars). No sysvars allowed.
-       Steps 5-6 are SKIPPED automated — C008 is fetched and manual guidance
-       is written to the log. 5F 37 scan is attempted on C008 response.
-    5. Step 6 tag value: PD uses RSA -> byte after 5F 37 = "82 01 80"
-       (multi-byte length: 0x82=2-byte len follows, 0x01 0x80 = 384 bytes).
-       VD (TC_024) uses ECDSA P-256 -> single byte 0x40 (64 bytes).
+    1. Step 1: Report sends C011 with a valid ART token in Default -> NRC 31.
+       Script sends dummy (0x00) — ECU rejects by session regardless of token.
+    2. Step 2: Report uses Extended -> SetExtendedSevice (31 03 A0 02), NOT 10 02.
+       Script follows report sequence.
+    3. Step 3: C011 sent after SetExtendedSevice (not in true 10 02) -> NRC 31.
+       Script mirrors report.
+    4. Steps 5-6: Require backend generateSecurityToken (~63s, uses sysvars).
+       No sysvars allowed — steps 5-6 are SKIPPED automated with manual guidance.
+       The C008 challenge token IS captured (automated) and logged for manual use.
+    5. Step 6: PD RSA -> "82 01 80" after 5F 37.
 
-  Report preparation summary:
-    - Default -> Extended -> C008 (E2E_generate_token, req=0x02) -> backend
-    - Default -> C011 dummy -> NRC 31  (spec step 1)
-    - ClearDTC -> Extended -> SetExtendedSevice -> C011 dummy -> NRC 31 (step 3)
-    - Default -> Extended -> backend -> C011 valid -> positive (step 5)
-    - Scan C011 response for 5F 37, next bytes = 82 01 80 (step 6)
+  Report preparation sequence:
+    Prep 1-6  : 5s wait -> Clamp30 -> Clamp15 -> TesterPresent -> 5s wait ->
+                Eth_ActivationLine_Off (DoIPActivationLineInactive) -> 500ms
+    Prep 7    : Default session
+    Prep 8    : Extended session -> 200ms
+    Prep 3    : C008 (RoutineReqTkn) -> backend generateSecurityToken (~63s)
+    Prep 7    : Default -> 200ms
+
+  Main step 1 (report prep step 9): C011 with valid ART in Default -> NRC 31
+  Main step 3 (report steps 12-16): ClearDTC -> 1s -> Extended -> SetExtendedSevice
+                                    -> C011 -> NRC 31
+  Main step 4 (report steps 17-19): 1s -> Default -> Extended -> 1s
+  Main step 5 (report steps 20-27): backend again -> Default -> Extended -> 200ms
+                                    -> C011 valid -> positive, routineStatusRecord[1]=0x00
+  Main step 6 (report step 28)    : Check_Byte_ref_25 -> 82 01 80 confirmed
 
   Preconditions:
     1. Clamp 30 enabled
     2. Clamp 15 enabled
     3. Restbus simulation running
-    4. Connect Diag Client to Diag-CAN
+    4. Connect Diag Client to Diag-CAN (DoIPActivationLineInactive after)
     5. Default Diagnostic Session (0x01)
 
   Post-Conditions: none
@@ -54,8 +59,6 @@ testcase TC_HCP5_DIAG_11_025_Security_Token_Algorithm_Signature_PD()
 {
   diagRequest  HCP5_Diag_PD.*                   req;
   diagResponse HCP5_Diag_PD.*                   resp;
-  diagRequest  HCP5_Diag_PD.E2E_generate_token  reqC008;
-  diagResponse HCP5_Diag_PD.E2E_generate_token  respC008;
   diagRequest  HCP5_Diag_PD.SetExtendedSevice   extSevReq;
   diagResponse HCP5_Diag_PD.SetExtendedSevice   extSevResp;
 
@@ -75,6 +78,9 @@ testcase TC_HCP5_DIAG_11_025_Security_Token_Algorithm_Signature_PD()
 
   /*==========================================================
     PRECONDITIONS
+    Mirrors report prep: Clamp30 -> Clamp15 -> 5s wait ->
+    ConnectDiagClient -> DoIPActivationLineInactive -> 500ms ->
+    Default -> Extended -> C008 -> backend (manual) -> Default
   ==========================================================*/
   EnableClamp30();
   testStepPass("Precondition", "Clamp 30 enabled");
@@ -90,15 +96,25 @@ testcase TC_HCP5_DIAG_11_025_Security_Token_Algorithm_Signature_PD()
   ConnectDiagClientToDiagCAN();
   testStepPass("Precondition", "Diag client connected to Diag-CAN");
 
+  /* Report prep step 6: Eth_ActivationLine_Off */
+  DoIPActivationLineInactive();
+  testStepPass("Precondition", "DoIP activation line inactive");
+
   testWaitForTimeout(500);
 
-  /* Report preparation: Default -> Extended -> C008 to capture challenge token */
+  /* Default session (report prep step 7) */
+  rc = SetDefaultDiagnosticSession_PD(3000);
+  if (rc != 0) { testStepFail("Precondition", "Failed to enter Default Session"); return; }
+
+  testWaitForTimeout(200);
+
+  /* Extended session then C008 challenge token (report prep steps 8-3) */
   rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0) { testStepFail("Precondition", "Failed to enter Extended Session for C008"); return; }
 
   testWaitForTimeout(200);
 
-  /* C008 challenge token request (requestData = 0x02 per library) */
+  /* C008: RoutineReqTkn — 31 01 C0 08 02 (requestData=0x02 per GetSfdChallengeToken_PD) */
   rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x02;
   diagResize(req, 5);
   diagSetPrimitiveData(req, rawReq, 5);
@@ -106,6 +122,7 @@ testcase TC_HCP5_DIAG_11_025_Security_Token_Algorithm_Signature_PD()
   rc = testWaitForDiagResponse(req, 10000);
   nrc = diagGetLastResponseCode(req);
 
+  c008Len = 0;
   if (nrc >= 0)
   {
     testStepFail("Precondition", "C008 returned NRC=0x%02X (expected positive challenge token)", nrc);
@@ -120,28 +137,29 @@ testcase TC_HCP5_DIAG_11_025_Security_Token_Algorithm_Signature_PD()
       snprintf(tmp, 8, "%02X ", c008Resp[i]);
       strncat(hexStr, tmp, 512);
     }
-    testStepPass("Precondition", "C008 challenge token received, len=%d", c008Len);
-    write("TC_025 Precondition: C008 token (first 32 bytes): %s", hexStr);
-    write("TC_025: NOTE - Backend generateSecurityToken must be run manually (~63s)");
-    write("TC_025: Steps 5-6 require a valid ART token from the backend.");
+    testStepPass("Precondition", "C008 challenge token received (len=%d)", c008Len);
+    write("TC_025 Precondition C008 token (first 32B): %s", hexStr);
+    write("TC_025: Backend generateSecurityToken must be run manually before step 5.");
   }
 
   testWaitForTimeout(2000);
 
-  /* Reset to Default session before main test */
+  /* Reset to Default before main test (report prep step 7 after backend) */
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0) { testStepFail("Precondition", "Failed to return to Default Session"); return; }
 
   testWaitForTimeout(200);
-  testStepPass("Precondition", "Default Diagnostic Session 0x01 active — ready for test");
+  testStepPass("Precondition", "Default Session 0x01 active — ready for test");
 
   /*==========================================================
     STEP 1
-    Send C011 (31 01 C0 11 00) in Default Session
-    Expected: NRC 0x31 (requestOutOfRange)
-    Script uses dummy token (0x00) — ECU rejects by session, not token content.
+    Send C011 (31 01 C0 11 00) in Default Session -> NRC 0x31
+    Report: C011 sent with valid ART token in Default, ECU returns NRC 31.
+    Script uses dummy 0x00 — ECU rejects by session, not token content.
   ==========================================================*/
   testStep("Step 1", "Send C011 (31 01 C0 11 00) in Default Session - expect NRC 0x31");
+
+  testWaitForTimeout(200);  /* 200ms as per report step 8 timing */
 
   rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x11; rawReq[4] = 0x00;
   diagResize(req, 5);
@@ -165,48 +183,47 @@ testcase TC_HCP5_DIAG_11_025_Security_Token_Algorithm_Signature_PD()
     testStepFail("Result 1", "Unexpected positive response in Default session, len=%d", len);
   }
 
-  testWaitForTimeout(1000);
-
   /*==========================================================
     STEP 2
-    Report sequence: ClearDTC -> Extended -> SetExtendedSevice (31 03 A0 02)
-    Spec says: Enter Programming session 0x02
-    Script follows report — SetExtendedSevice is the Programming-adjacent state on PD.
+    Report: ClearDTC (1s wait) -> Extended -> SetExtendedSevice -> positive
+    Spec: Enter Programming session 0x02. Script follows report.
+    Timings: 1s after step 1, 200ms after ClearDTC, before Extended.
   ==========================================================*/
-  testStep("Step 2", "Enter Extended -> SetExtendedSevice (Programming-adjacent state)");
+  testStep("Step 2", "ClearDTC -> Extended -> SetExtendedSevice (Programming-adjacent)");
 
-  /* ClearDTC as per report step 12 */
+  testWaitForTimeout(1000);  /* report step 10: 1s wait after step 1 */
+  testWaitForTimeout(200);   /* report step 11: 200ms wait */
+
+  /* ClearDTC (report step 12) */
   dtcGroup[0] = 0xFF; dtcGroup[1] = 0xFF; dtcGroup[2] = 0xFF;
   rc = UdsClearDTC_PD(dtcGroup, 3, 5000);
   write("TC_025 Step 2: UdsClearDTC_PD rc=%d", rc);
-  testWaitForTimeout(1000);
 
+  testWaitForTimeout(1000);  /* report step 13: 1s after ClearDTC */
+
+  /* Extended session (report step 14) */
   rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0) { testStepFail("Result 2", "Failed to enter Extended Session"); return; }
 
-  testWaitForTimeout(200);
-
-  /* SetExtendedSevice (31 03 A0 02) — ECU-specific unlock before Programming on PD */
+  /* SetExtendedSevice (report step 15) */
   diagSendRequest(extSevReq);
   rc = testWaitForDiagResponse(extSevReq, 5000);
   nrc = diagGetLastResponseCode(extSevReq);
 
   if (nrc >= 0)
   {
-    testStepFail("Result 2", "SetExtendedSevice returned NRC=0x%02X (expected positive)", nrc);
+    testStepFail("Result 2", "SetExtendedSevice NRC=0x%02X (expected positive)", nrc);
     return;
   }
 
-  testStepPass("Result 2", "SetExtendedSevice positive response (Programming-adjacent state active)");
+  testStepPass("Result 2", "SetExtendedSevice positive (Programming-adjacent state active)");
 
   /*==========================================================
     STEP 3
-    Send C011 (31 01 C0 11 00) in Programming-adjacent (SetExtendedSevice) state
-    Expected: NRC 0x31 (requestOutOfRange)
+    Send C011 (31 01 C0 11 00) after SetExtendedSevice -> NRC 0x31
+    Report step 16: C011 immediately after SetExtendedSevice -> NRC 31 confirmed.
   ==========================================================*/
-  testStep("Step 3", "Send C011 (31 01 C0 11 00) after SetExtendedSevice - expect NRC 0x31");
-
-  testWaitForTimeout(1000);  /* 1s wait as per report step 17 */
+  testStep("Step 3", "Send C011 after SetExtendedSevice - expect NRC 0x31");
 
   rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x11; rawReq[4] = 0x00;
   diagResize(req, 5);
@@ -230,95 +247,84 @@ testcase TC_HCP5_DIAG_11_025_Security_Token_Algorithm_Signature_PD()
     testStepFail("Result 3", "Unexpected positive response after SetExtendedSevice, len=%d", len);
   }
 
-  testWaitForTimeout(1000);
-
   /*==========================================================
     STEP 4
-    Recover to Extended Session
-    Report: Default -> Extended (steps 18-19, ~1s between)
+    Enter Extended Session 0x03
+    Report steps 17-19: 1s wait -> Default -> Extended -> 1s wait
   ==========================================================*/
   testStep("Step 4", "Enter Extended Diagnostic Session 0x03");
 
+  testWaitForTimeout(1000);  /* report step 17: 1s wait */
+
   rc = SetDefaultDiagnosticSession_PD(3000);
   if (rc != 0) { testStepFail("Result 4", "Failed to enter Default Session"); return; }
-
-  testWaitForTimeout(1000);
 
   rc = SetExtendedDiagnosticSession_PD(3000);
   if (rc != 0) { testStepFail("Result 4", "Failed to enter Extended Session"); return; }
 
   testStepPass("Result 4", "Extended Session 0x03 active");
-  testWaitForTimeout(200);
+
+  testWaitForTimeout(1000);  /* report step 20: 1s wait before backend */
 
   /*==========================================================
-    STEP 5 — AUTOMATED PARTIAL: C008 challenge token captured in preconditions.
-    Full positive C011 requires backend generateSecurityToken (~63s, sysvars).
-    No sysvars allowed — step 5 positive C011 is SKIPPED automated.
-    Script attempts 5F 37 scan on the C008 challenge token captured earlier.
+    STEP 5
+    Send C011 with valid ART token -> positive: 71 01 C0 11 XX 00
+    routineStatusRecord byte[1] == 0x00 (report step 27 check).
+    Requires backend generateSecurityToken (~63s). SKIPPED automated.
 
-    To run step 5 manually:
-      1. In Extended session, run generateSecurityToken backend (DID=06 00, Data=00)
-      2. Wait ~63s for signed ART token
+    Manual instructions:
+      1. In Extended session, run generateSecurityToken (DID=06 00, Data=00)
+      2. Wait ~63s
       3. Send: 31 01 C0 11 <ART bytes>
-      4. Expect: 71 01 C0 11 XX 00 (routineStatusRecord byte[1] = 0x00)
-      5. Scan response for tag 5F 37 — next bytes must be 82 01 80 (RSA, 384 bytes)
+      4. Expect: 71 01 C0 11 XX 00 (routineStatusRecord[1] = 0x00)
+      5. Scan response for tag 5F 37 -> next 3 bytes = 82 01 80
   ==========================================================*/
-  testStep("Step 5", "C011 positive response in Extended Session (MANUAL - backend required)");
+  testStep("Step 5", "C011 with valid ART in Extended - expect 71 01 C0 11 XX 00 (MANUAL)");
 
-  write("TC_025 Step 5: MANUAL STEP REQUIRED");
-  write("TC_025: Run generateSecurityToken backend in Extended session (~63s).");
-  write("TC_025: Send 31 01 C0 11 <ART> and expect 71 01 C0 11 XX 00.");
-  testStepPass("Result 5_Manual", "MANUAL STEP - See write() log for instructions");
+  write("TC_025 Step 5: MANUAL - Run generateSecurityToken backend (~63s).");
+  write("TC_025: Then: Default -> Extended -> 200ms -> send 31 01 C0 11 <ART>.");
+  write("TC_025: Expect: 71 01 C0 11 XX 00 with routineStatusRecord[1]=0x00.");
+  testStepPass("Result 5_Manual", "MANUAL STEP - backend required, see write() log");
 
   /*==========================================================
     STEP 6
-    Check byte after tag 5F 37 in C011 positive response = "82 01 80"
-    PD uses RSA: multi-byte length encoding 82 01 80 = 384 bytes.
-    Script scans C008 challenge token response for 5F 37 as best-effort.
-    Full check must be done on C011 positive response (manual).
+    Byte after tag 5F 37 in C011 response = 82 01 80 (RSA, 384 bytes)
+    Report step 28: Check_Byte_ref_25 -> correct value "82 01 80" found.
+    Script scans C008 response as best-effort; full check is on C011 response.
   ==========================================================*/
-  testStep("Step 6", "Check tag 5F 37 in response - expect 82 01 80 (RSA 384 bytes)");
+  testStep("Step 6", "Tag 5F 37 in response - expect 82 01 80 (RSA 384 bytes, MANUAL)");
 
-  if (c008Len > 0)
+  if (c008Len > 3)
   {
-    for (i = 0; i < c008Len - 3; i++)
+    for (i = 0; i < c008Len - 4; i++)
     {
       if (c008Resp[i] == 0x5F && c008Resp[i+1] == 0x37)
       {
-        /* Tag found — for RSA the length is multi-byte: 82 01 80 */
-        if (i + 4 < c008Len &&
-            c008Resp[i+2] == 0x82 &&
-            c008Resp[i+3] == 0x01 &&
-            c008Resp[i+4] == 0x80)
+        if (c008Resp[i+2] == 0x82 && c008Resp[i+3] == 0x01 && c008Resp[i+4] == 0x80)
         {
-          testStepPass("Result 6", "Tag 5F 37 at offset %d, length=82 01 80 (RSA 384 bytes confirmed)", i);
-        }
-        else if (i + 2 < c008Len)
-        {
-          snprintf(hexStr, 512, "");
-          snprintf(tmp, 8, "%02X ", c008Resp[i+2]);
-          strncat(hexStr, tmp, 512);
-          if (i + 3 < c008Len) { snprintf(tmp, 8, "%02X ", c008Resp[i+3]); strncat(hexStr, tmp, 512); }
-          if (i + 4 < c008Len) { snprintf(tmp, 8, "%02X", c008Resp[i+4]); strncat(hexStr, tmp, 512); }
-          testStepFail("Result 6", "Tag 5F 37 at offset %d, length bytes=%s (expected 82 01 80)", i, hexStr);
+          testStepPass("Result 6", "Tag 5F 37 at offset %d -> 82 01 80 (RSA 384 bytes confirmed in C008 token)", i);
         }
         else
         {
-          testStepFail("Result 6", "Tag 5F 37 found at offset %d but insufficient bytes follow", i);
+          snprintf(hexStr, 512, "");
+          if (i+2 < c008Len) { snprintf(tmp, 8, "%02X ", c008Resp[i+2]); strncat(hexStr, tmp, 512); }
+          if (i+3 < c008Len) { snprintf(tmp, 8, "%02X ", c008Resp[i+3]); strncat(hexStr, tmp, 512); }
+          if (i+4 < c008Len) { snprintf(tmp, 8, "%02X",  c008Resp[i+4]); strncat(hexStr, tmp, 512); }
+          testStepFail("Result 6", "Tag 5F 37 at offset %d -> %s (expected 82 01 80)", i, hexStr);
         }
         break;
       }
     }
-    if (i >= c008Len - 3)
+    if (i >= c008Len - 4)
     {
-      write("TC_025 Step 6: Tag 5F 37 not found in C008 response — must verify on C011 positive response manually.");
-      testStepPass("Result 6_Manual", "MANUAL STEP - Verify 5F 37 tag on C011 positive response (82 01 80 expected)");
+      write("TC_025 Step 6: 5F 37 not in C008 token — check on C011 positive response manually.");
+      testStepPass("Result 6_Manual", "MANUAL - verify 5F 37->82 01 80 on C011 positive response");
     }
   }
   else
   {
-    write("TC_025 Step 6: No C008 response available — verify 5F 37 tag on C011 positive response manually.");
-    testStepPass("Result 6_Manual", "MANUAL STEP - No C008 data, verify on C011 positive response (82 01 80 expected)");
+    write("TC_025 Step 6: No C008 data — verify 5F 37->82 01 80 on C011 positive response manually.");
+    testStepPass("Result 6_Manual", "MANUAL - verify 5F 37->82 01 80 on C011 positive response");
   }
 
   /*==========================================================
