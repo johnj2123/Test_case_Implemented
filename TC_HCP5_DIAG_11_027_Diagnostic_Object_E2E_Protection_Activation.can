@@ -51,6 +51,8 @@ testcase TC_HCP5_DIAG_11_027_Diagnostic_Object_E2E_Protection_Activation()
 {
   diagRequest  HCP5_Diag_VD.*              req;
   diagResponse HCP5_Diag_VD.*             resp;
+  diagRequest  HCP5_Diag_VD.ReadReq0174   req_0174;
+  diagResponse HCP5_Diag_VD.ReadReq0174   resp_0174;
 
   byte    rawReq[8];
   byte    readBuf[4095];
@@ -145,39 +147,41 @@ testcase TC_HCP5_DIAG_11_027_Diagnostic_Object_E2E_Protection_Activation()
   ======================================================*/
   testStep("Step 2", "Read DID 0x0174 - expect 62 01 74 04 XX XX FF (byte[3]=0xFF)");
 
-  rc = ReadDid_VD(0x0174, readBuf, elcount(readBuf));
+  /* UdsReadDid strips 62+DID header — outData[] contains only payload bytes.
+     Response 62 01 74 04 03 01 FF => readBuf[0]=0x04, readBuf[3]=0xFF.
+     TC_030 reference uses this same pattern with ReadReq0174 typed object. */
+  len = UdsReadDid(0x0174, req_0174, resp_0174, readBuf, elcount(readBuf), 5000);
 
-  if (rc < 0)
+  if (len <= 0)
   {
-    testStepFail("Result 2", "ReadDid_VD(0x0174) failed, rc=%d", rc);
+    testStepFail("Result 2", "UdsReadDid(0x0174) failed, rc=%d", len);
     testStepFail("Response 2", "no response");
   }
   else
   {
-    /* Build hex string for report */
+    /* Build hex string of payload for report */
     snprintf(hexStr, 256, "");
-    for (i = 0; i < rc && i < 16; i++)
+    for (i = 0; i < len && i < 16; i++)
     {
       snprintf(tmp, 8, "%02X ", readBuf[i]);
       strncat(hexStr, tmp, 256);
     }
 
-    /* Response format: 62 01 74 [data...] — ReadDid_VD includes the 62+DID header.
-       Full response: 62 01 74 04 03 01 FF => readBuf[6] = 0xFF (last data byte).
-       Spec check: byte[3] of DATA = 0xFF => that is readBuf[6] in full response. */
-    if (rc >= 7 && readBuf[6] == 0xFF)
+    /* Payload: [0]=unlockState [1]=durationType [2]=roleType [3]=accessIndicator
+       Spec: 62 01 74 04 XX XX FF => payload[3]=0xFF */
+    if (len >= 4 && readBuf[3] == 0xFF)
     {
-      testStepPass("Result 2", "DID 0x0174 read OK, data byte[3]=0xFF (access fully unlocked)");
+      testStepPass("Result 2", "DID 0x0174 OK, payload[3]=0xFF (access fully unlocked)");
       testStepPass("Response 2", "%s", hexStr);
     }
-    else if (rc >= 4)
+    else if (len >= 4)
     {
-      testStepFail("Result 2", "DID 0x0174 last byte=0x%02X (expected 0xFF), full response: %s", (rc>=7)?readBuf[6]:0xFF, hexStr);
+      testStepFail("Result 2", "DID 0x0174 payload[3]=0x%02X (expected 0xFF)", readBuf[3]);
       testStepFail("Response 2", "%s", hexStr);
     }
     else
     {
-      testStepFail("Result 2", "DID 0x0174 response too short, len=%d", rc);
+      testStepFail("Result 2", "DID 0x0174 response too short, len=%d", len);
       testStepFail("Response 2", "%s", hexStr);
     }
   }
