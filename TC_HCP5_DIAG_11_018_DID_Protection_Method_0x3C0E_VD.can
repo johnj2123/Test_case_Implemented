@@ -233,7 +233,14 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
 
   testWaitForTimeout(3000);
 
-  /* Re-enter Extended, then TesterPresent before Programming (required — confirmed from TC_DIAG_05) */
+  /* Default -> Extended -> TesterPresent -> Programming
+     Pass report goes Default first (step 9 of preparation), then main test.
+     ECU requires Default session reset before accepting Programming transition. */
+  rc = SetDefaultDiagnosticSession_VD(3000);
+  if (rc != 0) { testStepFail("Result 4", "Failed to enter Default Session before Programming"); return; }
+
+  testWaitForTimeout(250);
+
   rc = SetExtendedDiagnosticSession_VD(3000);
   if (rc != 0) { testStepFail("Result 4", "Failed to enter Extended Session before Programming"); return; }
 
@@ -243,12 +250,12 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
 
   testWaitForTimeout(500);
 
-  /* Enter Programming session — library sends 10 02 via SetExtendedSevice typed object */
+  /* Enter Programming session */
   rc = SetProgrammingDiagnosticSession_VD(5000);
   if (rc != 0)
   {
-    testStepFail("Result 4", "SetProgrammingDiagnosticSession_VD failed, rc=%d", rc);
-    testStepFail("Response 4", "no response (rc=%d)", rc);
+    testStepFail("Result 4", "SetProgrammingDiagnosticSession_VD failed, NRC 0x22=conditionsNotCorrect — vehicle precondition not met", rc);
+    testStepFail("Response 4", "7F 10 22 (conditionsNotCorrect)", rc);
     return;
   }
 
