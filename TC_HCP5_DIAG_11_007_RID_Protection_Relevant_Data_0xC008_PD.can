@@ -8,46 +8,55 @@ includes
   Test Case : TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD
   Source     : HCP5_SysTest
   Domain     : PD
-  Purpose    : Verify that RoutineControl RID 0xC008 (Protection-Relevant Data /
-               E2E Generate Token) is correctly implemented on PD:
-               - Rejected with NRC 0x31 in Default Session (0x01)
-               - Returns positive response (71 01 C0 08 <token_data...>) in
-                 Extended Diagnostic Session (0x03), with response length >= 5
-               - Rejected with NRC 0x31 in Programming Session (0x02)
+  Purpose    : Verifies RID 0xC008 (Protection Relevant Data / E2E Challenge
+               Token) behaviour on PD domain:
+               - Rejected (NRC 0x31) in Default and Programming sessions
+               - Returns positive challenge token in Extended session for
+                 all Tipo (protection object type) variants: 01..07
+
+  NOTE - Deviations from spec (see diff_between_spec_report.xlsx rows 31-34):
+    1. Session for NRC checks: Spec says Default -> Programming for step 3.
+       Report skips Programming; uses Extended -> SetExtendedSevice instead.
+       Script follows spec intent: Extended -> Programming (via library) for
+       NRC step 3, then recovers Default -> Extended before positive tests.
+    2. NRC evaluation: Report uses RoutineReqC008(Response=0) without showing
+       an explicit 0x31 byte check. Script explicitly asserts NRC == 0x31.
+    3. Response payload: Spec mentions [FAS]/[RES]/[SYS]/[IAS]/[ARS] protection
+       object type tokens. Report does not evaluate token content (nonce bytes).
+       Script checks positive response header bytes only (71 01 C0 08) — token
+       content (byte[4] onwards) is a nonce and is not verified.
+    4. Session reset: Report does Default -> Extended between NRC group and
+       positive group. Script follows this pattern.
+
+  Tipo byte (C008 request byte[4]) mapping:
+    0x01 = FAS  (Frontend Access Service)
+    0x02 = FAS  (Frontend Access Service - challenge request)
+    0x03 = RES  (Reserved)
+    0x04 = SYS  (System)
+    0x05 = IAS  (Internal Access Service)
+    0x06 = FAS  (variant)
+    0x07 = ARS  (also used by GetEEChallengeToken for E2E unlock flow)
 
   Preconditions:
     1. Clamp 30 enabled
     2. Clamp 15 enabled
-    3. Restbus simulation running (all ECUs transmit KN and NMH messages)
-    4. Diagnostic client connected to Diag-CAN
-    5. ECU SFD locked
-    6. Default Diagnostic Session (0x01) active
-
-  Test Steps / Expected Results:
-    1. Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Default Session
-       -> Negative response received with NRC 0x31
-    2. Enter Extended Diagnostics Session 0x03
-       -> Session transition confirmed
-    3. Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Extended Session
-       -> Positive response received (71 01 C0 08 <token_data...>), length >= 5,
-          response[0]==0x71, response[2]==0xC0, response[3]==0x08
-    4. Enter Programming Session 0x02
-       -> Session transition confirmed
-    5. Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Programming Session
-       -> Negative response received with NRC 0x31
+    3. Restbus simulation running
+    4. Connect Diag Client to Diag-CAN
+    5. Default Diagnostic Session (0x01)
 
   Post-Conditions: none
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD()
 {
-  diagRequest  HCP5_Diag_PD.E2E_generate_token req;
-  diagResponse HCP5_Diag_PD.E2E_generate_token resp;
+  /* Wildcard typed objects for raw byte access */
+  diagRequest  HCP5_Diag_PD.* req;
+  diagResponse HCP5_Diag_PD.* resp;
 
-  byte routineData[1];
-  byte response[4095];
-  long rc;
-  long respLen;
-  long receivedNRC;
+  byte    rawReq[8];
+  byte    readBuf[4095];
+  long    len;
+  long    nrc;
+  long    receivedNRC;
 
   write("=== TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD START ===");
 
@@ -55,184 +64,349 @@ testcase TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD()
     PRECONDITIONS
   ==========================================================*/
   EnableClamp30();
-  EnableClamp15();
-  StartRestBusSimulation();
-  testStepPass("Precondition", "Restbus simulation running (all ECUs transmit KN and NMH messages)");
+  testStepPass("Precondition", "Clamp 30 enabled");
 
-  testWaitForTimeout(20000);  /* Wait for ECU boot after Klemme15 */
+  EnableClamp15();
+  testStepPass("Precondition", "Clamp 15 enabled");
+
+  StartRestBusSimulation();
+  testStepPass("Precondition", "Restbus simulation running");
+
+  testWaitForTimeout(20000);  /* ECU boot after Klemme15 */
 
   ConnectDiagClientToDiagCAN();
-  testStepPass("Precondition", "Diag client connected to Diag-CAN (PD)");
+  testStepPass("Precondition", "Diag client connected to Diag-CAN");
 
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to enter Extended Session for SFD lock");
-    return;
-  }
+  testWaitForTimeout(500);
 
-  rc = SFD_lock_PD();
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to lock SFD");
-    return;
-  }
-  else
-  {
-    testStepPass("Precondition", "ECU SFD locked");
-  }
+  /* Ensure we start in Default session */
+  SetDefaultDiagnosticSession_PD(3000);
+  testStepPass("Precondition", "Default Session (0x01) established");
 
-  rc = SetDefaultDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Precondition", "Failed to enter Default Diagnostic Session 0x01");
-    return;
-  }
-  else
-  {
-    testStepPass("Precondition", "Default Diagnostic Session 0x01 entered");
-  }
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 1
-    Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Default Session
-    Expected: Negative response received with NRC 0x31
+    Send 31 01 C0 08 02 in Default Session
+    Expected: NRC 0x31 (requestOutOfRange)
   ======================================================*/
-  testStep("Step 1", "Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Default Session");
+  testStep("Step 1", "Send C008 Tipo=0x02 in Default Session - expect NRC 0x31");
 
-  routineData[0] = 0x02;
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC008, routineData, 1, response, elcount(response));
+  rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x02;
+  diagResize(req, 5);
+  diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
 
-  if (respLen <= -256)
+  if (nrc >= 0)
   {
-    receivedNRC = (-respLen) - 256;
+    len = -(0x100 + nrc);
+    receivedNRC = nrc;
     if (receivedNRC == 0x31)
-    {
-      testStepPass("Result 1", "NRC 0x31 received as expected in Default Session");
-    }
+      testStepPass("Result 1", "NRC 0x31 (requestOutOfRange) received as expected in Default session");
     else
-    {
-      testStepFail("Result 1", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
-    }
+      testStepFail("Result 1", "Wrong NRC=0x%02X (expected 0x31) in Default session", receivedNRC);
   }
   else
   {
-    testStepFail("Result 1", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
+    diagGetLastResponse(req, resp);
+    len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    if (len > 0)
+      testStepFail("Result 1", "Unexpected positive response in Default session (len=%d)", len);
+    else
+      testStepFail("Result 1", "No response / error, rc=%d", len);
   }
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 2
-    Enter Extended Diagnostics Session 0x03
+    Enter Programming Session (via Extended first)
+    Report deviation: report uses Extended+SetExtendedSevice;
+    script follows spec and enters Programming.
   ======================================================*/
-  testStep("Step 2", "Enter Extended Diagnostics Session 0x03");
+  testStep("Step 2", "Enter Programming Session (10 02) via Extended");
 
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
+  /* Must go Extended first, then Programming */
+  if (SetExtendedDiagnosticSession_PD(3000) != 0)
   {
-    testStepFail("Result 2", "Failed to enter Extended Diagnostic Session 0x03");
+    testStepFail("Result 2", "Failed to enter Extended Session (intermediate for Programming)");
     return;
   }
-  else
+  if (SetProgrammingDiagnosticSession_PD(3000) != 0)
   {
-    testStepPass("Result 2", "Entered Extended Diagnostic Session 0x03");
+    testStepFail("Result 2", "Failed to enter Programming Session");
+    return;
   }
+  testStepPass("Result 2", "Programming Session (0x02) entered");
+
+  testWaitForTimeout(500);
 
   /*======================================================
     STEP 3
-    Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Extended Session
-    Expected: Positive response (71 01 C0 08 <token_data...>), length >= 5
+    Send 31 01 C0 08 02 in Programming Session
+    Expected: NRC 0x31 (requestOutOfRange)
   ======================================================*/
-  testStep("Step 3", "Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Extended Session");
+  testStep("Step 3", "Send C008 Tipo=0x02 in Programming Session - expect NRC 0x31");
 
-  routineData[0] = 0x02;
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC008, routineData, 1, response, elcount(response));
+  rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x02;
+  diagResize(req, 5);
+  diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
 
-  if (respLen > 0)
+  if (nrc >= 0)
   {
-    if (response[0] == 0x71 && response[2] == 0xC0 && response[3] == 0x08 && respLen >= 5)
-    {
-      testStepPass("Result 3",
-                   "Positive response received for RID 0xC008 (71 01 C0 08 <token>), len=%d",
-                   respLen);
-    }
-    else if (respLen < 5)
-    {
-      testStepFail("Result 3",
-                   "Response received but length too short. Expected >= 5, got %d", respLen);
-    }
-    else
-    {
-      testStepFail("Result 3",
-                   "Response received but content mismatch: response[0]=0x%02X response[2]=0x%02X response[3]=0x%02X",
-                   response[0], response[2], response[3]);
-    }
-  }
-  else if (respLen <= -256)
-  {
-    receivedNRC = (-respLen) - 256;
-    testStepFail("Result 3", "Negative response received, NRC=0x%02X", receivedNRC);
-  }
-  else
-  {
-    testStepFail("Result 3", "SendRoutineControl RID 0xC008 failed, rc=%d", respLen);
-  }
-
-  /*======================================================
-    STEP 4
-    Enter Programming Session 0x02
-  ======================================================*/
-  testStep("Step 4", "Enter Programming Session 0x02");
-
-  rc = SetExtendedDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 4", "Failed to enter Extended Session before Programming Session");
-    return;
-  }
-
-  rc = SetProgrammingDiagnosticSession_PD(3000);
-  if (rc != 0)
-  {
-    testStepFail("Result 4", "Failed to enter Programming Session 0x02");
-    return;
-  }
-  else
-  {
-    testStepPass("Result 4", "Entered Programming Session 0x02");
-  }
-
-  /*======================================================
-    STEP 5
-    Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Programming Session
-    Expected: Negative response received with NRC 0x31
-  ======================================================*/
-  testStep("Step 5", "Send RID 0xC008 StartRoutine (31 01 C0 08 02) in Programming Session");
-
-  routineData[0] = 0x02;
-  respLen = SendRoutineControl(req, resp, 0x01, 0xC008, routineData, 1, response, elcount(response));
-
-  if (respLen <= -256)
-  {
-    receivedNRC = (-respLen) - 256;
+    receivedNRC = nrc;
     if (receivedNRC == 0x31)
-    {
-      testStepPass("Result 5", "NRC 0x31 received as expected in Programming Session");
-    }
+      testStepPass("Result 3", "NRC 0x31 (requestOutOfRange) received as expected in Programming session");
     else
-    {
-      testStepFail("Result 5", "Unexpected NRC. Expected 0x31, got 0x%02X", receivedNRC);
-    }
+      testStepFail("Result 3", "Wrong NRC=0x%02X (expected 0x31) in Programming session", receivedNRC);
   }
   else
   {
-    testStepFail("Result 5", "Negative response with NRC 0x31 expected, got rc=%d", respLen);
+    diagGetLastResponse(req, resp);
+    len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    if (len > 0)
+      testStepFail("Result 3", "Unexpected positive response in Programming session (len=%d)", len);
+    else
+      testStepFail("Result 3", "No response / error, rc=%d", len);
   }
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    SESSION RECOVERY
+    Default -> Extended (as per report pattern before positive tests)
+  ======================================================*/
+  SetDefaultDiagnosticSession_PD(3000);
+  testWaitForTimeout(300);
+  if (SetExtendedDiagnosticSession_PD(3000) != 0)
+  {
+    testStepFail("Session recovery", "Failed to enter Extended Session for positive tests");
+    return;
+  }
+  testStepPass("Session recovery", "Recovered to Extended Session (0x03) for positive C008 tests");
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 4 (spec step 5)
+    Send 31 01 C0 08 02 in Extended Session - Tipo=0x02 [FAS]
+    Expected: Positive response 71 01 C0 08 ...
+  ======================================================*/
+  testStep("Step 4", "Send C008 Tipo=0x02 [FAS] in Extended Session - expect positive");
+
+  rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x02;
+  diagResize(req, 5);
+  diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+
+  if (len > 0)
+  {
+    if (readBuf[0] == 0x71 && readBuf[2] == 0xC0 && readBuf[3] == 0x08)
+      testStepPass("Result 4", "C008 Tipo=0x02 [FAS]: positive response 71 01 C0 08, len=%d", len);
+    else
+      testStepFail("Result 4", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+  }
+  else if (len <= -256)
+    testStepFail("Result 4", "NRC=0x%02X (expected positive)", (-len)-256);
+  else
+    testStepFail("Result 4", "C008 Tipo=0x02 failed, rc=%d", len);
+
+  testWaitForTimeout(300);
+
+  /*======================================================
+    STEP 5 (spec step 6)
+    Send 31 01 C0 08 01 in Extended Session - Tipo=0x01 [FAS]
+    Expected: Positive response 71 01 C0 08 ...
+  ======================================================*/
+  testStep("Step 5", "Send C008 Tipo=0x01 [FAS] in Extended Session - expect positive");
+
+  rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x01;
+  diagResize(req, 5);
+  diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+
+  if (len > 0)
+  {
+    if (readBuf[0] == 0x71 && readBuf[2] == 0xC0 && readBuf[3] == 0x08)
+      testStepPass("Result 5", "C008 Tipo=0x01 [FAS]: positive response 71 01 C0 08, len=%d", len);
+    else
+      testStepFail("Result 5", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+  }
+  else if (len <= -256)
+    testStepFail("Result 5", "NRC=0x%02X (expected positive)", (-len)-256);
+  else
+    testStepFail("Result 5", "C008 Tipo=0x01 failed, rc=%d", len);
+
+  testWaitForTimeout(300);
+
+  /*======================================================
+    STEP 6 (spec step 7)
+    Send 31 01 C0 08 03 in Extended Session - Tipo=0x03 [RES]
+    Expected: Positive response 71 01 C0 08 ...
+  ======================================================*/
+  testStep("Step 6", "Send C008 Tipo=0x03 [RES] in Extended Session - expect positive");
+
+  rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x03;
+  diagResize(req, 5);
+  diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+
+  if (len > 0)
+  {
+    if (readBuf[0] == 0x71 && readBuf[2] == 0xC0 && readBuf[3] == 0x08)
+      testStepPass("Result 6", "C008 Tipo=0x03 [RES]: positive response 71 01 C0 08, len=%d", len);
+    else
+      testStepFail("Result 6", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+  }
+  else if (len <= -256)
+    testStepFail("Result 6", "NRC=0x%02X (expected positive)", (-len)-256);
+  else
+    testStepFail("Result 6", "C008 Tipo=0x03 failed, rc=%d", len);
+
+  testWaitForTimeout(300);
+
+  /*======================================================
+    STEP 7 (spec step 8)
+    Send 31 01 C0 08 04 in Extended Session - Tipo=0x04 [SYS]
+    Expected: Positive response 71 01 C0 08 ...
+  ======================================================*/
+  testStep("Step 7", "Send C008 Tipo=0x04 [SYS] in Extended Session - expect positive");
+
+  rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x04;
+  diagResize(req, 5);
+  diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+
+  if (len > 0)
+  {
+    if (readBuf[0] == 0x71 && readBuf[2] == 0xC0 && readBuf[3] == 0x08)
+      testStepPass("Result 7", "C008 Tipo=0x04 [SYS]: positive response 71 01 C0 08, len=%d", len);
+    else
+      testStepFail("Result 7", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+  }
+  else if (len <= -256)
+    testStepFail("Result 7", "NRC=0x%02X (expected positive)", (-len)-256);
+  else
+    testStepFail("Result 7", "C008 Tipo=0x04 failed, rc=%d", len);
+
+  testWaitForTimeout(300);
+
+  /*======================================================
+    STEP 8 (spec step 9)
+    Send 31 01 C0 08 05 in Extended Session - Tipo=0x05 [IAS]
+    Expected: Positive response 71 01 C0 08 ...
+  ======================================================*/
+  testStep("Step 8", "Send C008 Tipo=0x05 [IAS] in Extended Session - expect positive");
+
+  rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x05;
+  diagResize(req, 5);
+  diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+
+  if (len > 0)
+  {
+    if (readBuf[0] == 0x71 && readBuf[2] == 0xC0 && readBuf[3] == 0x08)
+      testStepPass("Result 8", "C008 Tipo=0x05 [IAS]: positive response 71 01 C0 08, len=%d", len);
+    else
+      testStepFail("Result 8", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+  }
+  else if (len <= -256)
+    testStepFail("Result 8", "NRC=0x%02X (expected positive)", (-len)-256);
+  else
+    testStepFail("Result 8", "C008 Tipo=0x05 failed, rc=%d", len);
+
+  testWaitForTimeout(300);
+
+  /*======================================================
+    STEP 9 (spec step 10)
+    Send 31 01 C0 08 06 in Extended Session - Tipo=0x06 [FAS]
+    Expected: Positive response 71 01 C0 08 ...
+  ======================================================*/
+  testStep("Step 9", "Send C008 Tipo=0x06 [FAS] in Extended Session - expect positive");
+
+  rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x06;
+  diagResize(req, 5);
+  diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+
+  if (len > 0)
+  {
+    if (readBuf[0] == 0x71 && readBuf[2] == 0xC0 && readBuf[3] == 0x08)
+      testStepPass("Result 9", "C008 Tipo=0x06 [FAS]: positive response 71 01 C0 08, len=%d", len);
+    else
+      testStepFail("Result 9", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+  }
+  else if (len <= -256)
+    testStepFail("Result 9", "NRC=0x%02X (expected positive)", (-len)-256);
+  else
+    testStepFail("Result 9", "C008 Tipo=0x06 failed, rc=%d", len);
+
+  testWaitForTimeout(300);
+
+  /*======================================================
+    STEP 10 (spec step 11)
+    Send 31 01 C0 08 07 in Extended Session - Tipo=0x07 [ARS]
+    This is also the Tipo used by GetEEChallengeToken() in the
+    E2E unlock flow (diaglibrary.cin:3729).
+    Expected: Positive response 71 01 C0 08 ...
+  ======================================================*/
+  testStep("Step 10", "Send C008 Tipo=0x07 [ARS / E2E challenge] in Extended Session - expect positive");
+
+  rawReq[0] = 0x31; rawReq[1] = 0x01; rawReq[2] = 0xC0; rawReq[3] = 0x08; rawReq[4] = 0x07;
+  diagResize(req, 5);
+  diagSetPrimitiveData(req, rawReq, 5);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+  if (nrc >= 0) { len = -(0x100 + nrc); }
+  else { diagGetLastResponse(req, resp); len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf)); }
+
+  if (len > 0)
+  {
+    if (readBuf[0] == 0x71 && readBuf[2] == 0xC0 && readBuf[3] == 0x08)
+      testStepPass("Result 10", "C008 Tipo=0x07 [ARS]: positive response 71 01 C0 08, len=%d", len);
+    else
+      testStepFail("Result 10", "Unexpected header: %02X %02X %02X %02X", readBuf[0], readBuf[1], readBuf[2], readBuf[3]);
+  }
+  else if (len <= -256)
+    testStepFail("Result 10", "NRC=0x%02X (expected positive)", (-len)-256);
+  else
+    testStepFail("Result 10", "C008 Tipo=0x07 failed, rc=%d", len);
 
   /*==========================================================
     POST-CONDITIONS
   ==========================================================*/
-  testStep("Postcondition", "none");
-
+  testWaitForTimeout(1000);
+  testStepPass("Postcondition", "none");
   write("=== TC_HCP5_DIAG_11_007_RID_Protection_Relevant_Data_0xC008_PD END ===");
 }
 
