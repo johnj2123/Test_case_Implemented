@@ -52,13 +52,10 @@ includes
 =============================================================================*/
 testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
 {
-  diagRequest  HCP5_Diag_VD.*              req;
-  diagResponse HCP5_Diag_VD.*             resp;
-  diagRequest  HCP5_Diag_VD.SetExtendedSevice  extSevReq;
-  diagResponse HCP5_Diag_VD.SetExtendedSevice  extSevResp;
+  diagRequest  HCP5_Diag_VD.*  req;
+  diagResponse HCP5_Diag_VD.*  resp;
 
   byte    rawReq[8];
-  byte    rawExtSev[4];
   byte    readBuf[4095];
   byte    dtcGroup[3];
   long    len;
@@ -221,18 +218,15 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
   /*======================================================
     STEP 4
     Enter Programming Session 0x02
-    Report sequence:
-      1. ClearDTC
-      2. wait 3000ms
-      3. Extended session
-      4. SetExtendedSevice routine: 31 03 A0 02 (~1775ms response)
-      5. Programming session: 10 02
-    Fix vs previous run: SetExtendedSevice (31 03 A0 02) must be sent
-    explicitly before Programming — ECU rejects 10 02 without it.
+    Pass report sequence: ClearDTC -> wait -> Extended -> SetExtendedSevice_RQ
+    (which is the 10 02 Programming session request via the database typed object)
+    -> Programming active.
+    SetProgrammingDiagnosticSession_VD() sends 10 02 via SetExtendedSevice typed
+    object internally — no separate routine call needed. Confirmed from TC_DIAG_05.
   ======================================================*/
-  testStep("Step 4", "Enter Programming Session (ClearDTC -> Extended -> SetExtendedSevice -> Programming)");
+  testStep("Step 4", "Enter Programming Session (ClearDTC -> Extended -> Programming)");
 
-  /* ClearDTC — group 0xFF FF FF (all DTCs) */
+  /* ClearDTC — group 0xFF FF FF (all DTCs) as per pass report */
   dtcGroup[0] = 0xFF; dtcGroup[1] = 0xFF; dtcGroup[2] = 0xFF;
   rc = UdsClearDTC_VD(dtcGroup, 3, 5000);
   write("TC_018 Step 4: UdsClearDTC_VD rc=%d", rc);
@@ -243,48 +237,19 @@ testcase TC_HCP5_DIAG_11_018_DID_Protection_Method_0x3C0E_VD()
   rc = SetExtendedDiagnosticSession_VD(3000);
   if (rc != 0) { testStepFail("Result 4", "Failed to enter Extended Session before Programming"); return; }
 
-  testWaitForTimeout(250);
+  testWaitForTimeout(500);
 
-  /* Send SetExtendedSevice unlock routine: 31 03 A0 02
-     This is mandatory before 10 02 on VD — ECU returns NRC without it.
-     Pass report shows ~1775ms response time — use 5000ms timeout. */
-  rawExtSev[0] = 0x31; rawExtSev[1] = 0x03; rawExtSev[2] = 0xA0; rawExtSev[3] = 0x02;
-  diagResize(extSevReq, 4);
-  diagSetPrimitiveData(extSevReq, rawExtSev, 4);
-  diagSendRequest(extSevReq);
-  testWaitForDiagResponse(extSevReq, 5000);
-  rc = diagGetLastResponseCode(extSevReq);
-
-  if (rc >= 0)
-  {
-    testStepFail("Result 4", "SetExtendedSevice (31 03 A0 02) NRC=0x%02X (expected positive)", rc);
-    testStepFail("Response 4a", "7F 31 %02X", rc);
-    return;
-  }
-  else
-  {
-    diagGetLastResponse(extSevReq, extSevResp);
-    len = diagGetPrimitiveData(extSevResp, readBuf, elcount(readBuf));
-    snprintf(hexStr, 256, "");
-    for (i = 0; i < len && i < 8; i++)
-    {
-      snprintf(tmp, 8, "%02X ", readBuf[i]);
-      strncat(hexStr, tmp, 256);
-    }
-    testStepPass("Response 4a", "SetExtendedSevice: %s", hexStr);
-  }
-
-  /* Now enter Programming session */
+  /* Enter Programming session — library sends 10 02 via SetExtendedSevice typed object */
   rc = SetProgrammingDiagnosticSession_VD(5000);
   if (rc != 0)
   {
     testStepFail("Result 4", "SetProgrammingDiagnosticSession_VD failed, rc=%d", rc);
-    testStepFail("Response 4b", "no response (rc=%d)", rc);
+    testStepFail("Response 4", "no response (rc=%d)", rc);
     return;
   }
 
   testStepPass("Result 4", "Programming Session 0x02 active");
-  testStepPass("Response 4b", "50 02 (Programming session entered)");
+  testStepPass("Response 4", "50 02 (Programming session entered)");
   testWaitForTimeout(250);
 
   /*======================================================
