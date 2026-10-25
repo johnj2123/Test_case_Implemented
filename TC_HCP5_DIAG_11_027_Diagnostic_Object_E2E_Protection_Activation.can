@@ -1,0 +1,251 @@
+includes
+{
+  #include "../diaglibrary.cin"
+  #include "../DiagLibraryAI.cin"
+}
+
+/*=============================================================================
+  Test Case : TC_HCP5_DIAG_11_027_Diagnostic_Object_E2E_Protection_Activation
+  Source     : HCP5_SysTest
+  Domain     : VD
+  Purpose    : Verifies that a diagnostic object secured with SFD E2E protection
+               (DID 0x0600) cannot also be protected with SFD access protection.
+               Write request 2E 06 00 00 must be rejected with NRC 0x33
+               (securityAccessDenied) even after SFD Superuser unlock.
+
+  Spec steps:
+    1. Unlock SFD with Superuser Persistent role
+    2. Read DID 0x0174 -> positive 62 01 74 04 XX XX FF
+    3. Send 2E 06 00 00 -> NRC 0x33 (securityAccessDenied)
+
+  Report sequence (see diff_between_spec_report.xlsx rows 52-54):
+    Prep: Clamp30 -> Clamp15 -> 30s wait -> SFD_lock (status=1) -> Default session
+    Main 1: 500ms -> Extended session -> 500ms
+    Main 2: SFD unlock (Superuser, status=4) -> reads 0x0174 (Role=04 Type=03)
+    Main 3: Read 0x0174 -> checks byte[3]==0xFF
+    Main 4: Extended session -> 500ms -> ClearDTC -> 500ms
+    Main 5: WriteCodierung (2E 06 00) -> NRC 0x33
+
+  NOTE - Deviations from spec:
+    1. Spec says "Extended session" as precondition. Report enters Default first
+       (preparation step 6), then Extended in main step 2. Script follows report.
+    2. Report SFD unlock uses Superuser_Short (role=04 type=03 in 0x0174 response).
+       Library UnlockSfdRole_Dynamic_VD(1) = Superuser_Persistent. Both are
+       Superuser-level; script uses library function (role type 1).
+    3. 0x0174 check: spec says byte[3]=0xFF. In response 62 01 74 [data],
+       readBuf[3] is the first data byte after the DID echo (byte index 3 = 4th byte).
+       Report confirms byte[3]==0xFF = access fully unlocked indicator.
+
+  Preconditions:
+    1. Clamp 30 enabled
+    2. Clamp 15 enabled
+    3. Restbus simulation running
+    4. Connect Diag Client to Diag-CAN
+    5. DoIP activation line inactive
+    6. SFD locked (VD)
+    7. Default Diagnostic Session (0x01)
+
+  Post-Conditions: none
+=============================================================================*/
+testcase TC_HCP5_DIAG_11_027_Diagnostic_Object_E2E_Protection_Activation()
+{
+  diagRequest  HCP5_Diag_VD.*              req;
+  diagResponse HCP5_Diag_VD.*             resp;
+
+  byte    rawReq[8];
+  byte    readBuf[4095];
+  byte    dtcGroup[3];
+  long    len;
+  long    rc;
+  long    nrc;
+  int     i;
+  char    hexStr[256];
+  char    tmp[8];
+
+  write("=== TC_HCP5_DIAG_11_027_Diagnostic_Object_E2E_Protection_Activation START ===");
+
+  /*==========================================================
+    PRECONDITIONS
+  ==========================================================*/
+  EnableClamp30();
+  testStepPass("Precondition", "Clamp 30 enabled");
+
+  EnableClamp15();
+  testStepPass("Precondition", "Clamp 15 enabled");
+
+  StartRestBusSimulation();
+  testStepPass("Precondition", "Restbus simulation running");
+
+  testWaitForTimeout(20000);  /* ECU boot after Klemme15 */
+
+  ConnectDiagClientToDiagCAN();
+  testStepPass("Precondition", "Diag client connected to Diag-CAN");
+
+  testWaitForTimeout(500);
+
+  DoIPActivationLineInactive();
+  testStepPass("Precondition", "DoIP activation line inactive");
+
+  testWaitForTimeout(500);
+
+  /* Lock SFD — report preparation step 4 (SFD_manager status=1) */
+  rc = SetExtendedDiagnosticSession_VD(3000);
+  if (rc != 0) { testStepFail("Precondition", "Failed to enter Extended Session for SFD lock"); return; }
+
+  rc = SFD_lock();
+  if (rc != 0)
+    testStepFail("Precondition", "SFD_lock() failed, rc=%d", rc);
+  else
+    testStepPass("Precondition", "SFD locked via SFD_lock()");
+
+  testWaitForTimeout(500);
+
+  /* Return to Default session — report preparation step 6 */
+  rc = SetDefaultDiagnosticSession_VD(3000);
+  if (rc != 0) { testStepFail("Precondition", "Failed to enter Default Session"); return; }
+
+  testStepPass("Precondition", "Default Session (0x01) established");
+
+  testWaitForTimeout(500);
+
+  /*======================================================
+    STEP 1
+    Unlock SFD with Superuser Persistent role
+    Report: SFD_manager(status=4) -> Extended session -> Superuser unlock
+    Library: UnlockSfdRole_Dynamic_VD(1) = Superuser_Persistent
+    Expected: 0x0174 byte[3] = 0xFF (access fully unlocked)
+  ======================================================*/
+  testStep("Step 1", "Unlock SFD with Superuser Persistent role (UnlockSfdRole_Dynamic_VD(1))");
+
+  /* Enter Extended before unlock — report main step 2 */
+  rc = SetExtendedDiagnosticSession_VD(3000);
+  if (rc != 0)
+  {
+    testStepFail("Result 1", "Failed to enter Extended Session before SFD unlock");
+    return;
+  }
+
+  testWaitForTimeout(500);
+
+  /* SFD unlock — Superuser Persistent (type 1) */
+  rc = UnlockSfdRole_Dynamic_VD(1);
+  if (rc != 0)
+  {
+    testStepFail("Result 1", "UnlockSfdRole_Dynamic_VD(1) failed, rc=%d", rc);
+    return;
+  }
+
+  testStepPass("Result 1", "SFD unlocked with Superuser Persistent role (UnlockSfdRole_Dynamic_VD(1))");
+
+  /*======================================================
+    STEP 2
+    Read DID 0x0174
+    Expected: positive response 62 01 74 04 XX XX FF
+              readBuf[3] == 0xFF (access indicator = fully unlocked)
+  ======================================================*/
+  testStep("Step 2", "Read DID 0x0174 - expect 62 01 74 04 XX XX FF (byte[3]=0xFF)");
+
+  rc = ReadDid_VD(0x0174, readBuf, elcount(readBuf));
+
+  if (rc < 0)
+  {
+    testStepFail("Result 2", "ReadDid_VD(0x0174) failed, rc=%d", rc);
+    testStepFail("Response 2", "no response");
+  }
+  else
+  {
+    /* Build hex string for report */
+    snprintf(hexStr, 256, "");
+    for (i = 0; i < rc && i < 16; i++)
+    {
+      snprintf(tmp, 8, "%02X ", readBuf[i]);
+      strncat(hexStr, tmp, 256);
+    }
+
+    if (rc >= 4 && readBuf[3] == 0xFF)
+    {
+      testStepPass("Result 2", "DID 0x0174 read OK, byte[3]=0xFF (access fully unlocked)");
+      testStepPass("Response 2", "%s", hexStr);
+    }
+    else if (rc >= 4)
+    {
+      testStepFail("Result 2", "DID 0x0174 byte[3]=0x%02X (expected 0xFF)", readBuf[3]);
+      testStepFail("Response 2", "%s", hexStr);
+    }
+    else
+    {
+      testStepFail("Result 2", "DID 0x0174 response too short, len=%d", rc);
+      testStepFail("Response 2", "%s", hexStr);
+    }
+  }
+
+  testWaitForTimeout(1000);
+
+  /*======================================================
+    STEP 3
+    Write DID 0x0600 (2E 06 00 00)
+    Expected: NRC 0x33 (securityAccessDenied)
+    DID 0x0600 is E2E-protected — write rejected even after SFD Superuser unlock
+    because E2E protection and SFD access protection cannot coexist.
+    Report sequence before write: Extended -> 500ms -> ClearDTC -> 500ms -> Write
+  ======================================================*/
+  testStep("Step 3", "Send 2E 06 00 00 (WriteCodierung DID 0x0600) - expect NRC 0x33");
+
+  /* Re-enter Extended as per report step 7 */
+  rc = SetExtendedDiagnosticSession_VD(3000);
+  if (rc != 0) { testStepFail("Result 3", "Failed to re-enter Extended Session before write"); return; }
+
+  testWaitForTimeout(500);
+
+  /* ClearDTC as per report step 9 */
+  dtcGroup[0] = 0xFF; dtcGroup[1] = 0xFF; dtcGroup[2] = 0xFF;
+  UdsClearDTC_VD(dtcGroup, 3, 5000);
+  testWaitForTimeout(500);
+
+  /* Send 2E 06 00 00 — raw write request for DID 0x0600 */
+  rawReq[0] = 0x2E; rawReq[1] = 0x06; rawReq[2] = 0x00; rawReq[3] = 0x00;
+  diagResize(req, 4);
+  diagSetPrimitiveData(req, rawReq, 4);
+  diagSendRequest(req);
+  testWaitForDiagResponse(req, 5000);
+  nrc = diagGetLastResponseCode(req);
+
+  if (nrc >= 0)
+  {
+    if (nrc == 0x33)
+    {
+      testStepPass("Result 3", "NRC 0x33 (securityAccessDenied) received as expected");
+      testStepPass("Response 3", "7F 2E 33");
+    }
+    else
+    {
+      testStepFail("Result 3", "Wrong NRC=0x%02X (expected 0x33)", nrc);
+      testStepFail("Response 3", "7F 2E %02X", nrc);
+    }
+  }
+  else
+  {
+    diagGetLastResponse(req, resp);
+    len = diagGetPrimitiveData(resp, readBuf, elcount(readBuf));
+    snprintf(hexStr, 256, "");
+    for (i = 0; i < len && i < 8; i++)
+    {
+      snprintf(tmp, 8, "%02X ", readBuf[i]);
+      strncat(hexStr, tmp, 256);
+    }
+    testStepFail("Result 3", "Unexpected positive response (len=%d) — expected NRC 0x33", len);
+    testStepFail("Response 3", "%s", hexStr);
+  }
+
+  /*==========================================================
+    POST-CONDITIONS
+  ==========================================================*/
+  testWaitForTimeout(1000);
+  testStepPass("Postcondition", "none");
+  write("=== TC_HCP5_DIAG_11_027_Diagnostic_Object_E2E_Protection_Activation END ===");
+}
+
+void MainTest()
+{
+  TC_HCP5_DIAG_11_027_Diagnostic_Object_E2E_Protection_Activation();
+}
