@@ -40,8 +40,8 @@ testcase TC_HCP5_DIAG_11_001_DID_Unlock_State_0x0174_PD()
 {
   diagRequest  HCP5_Diag_PD.SFD_Lock lockReq;
   diagResponse HCP5_Diag_PD.SFD_Lock lockResp;
-  diagRequest  HCP5_Diag_PD.SFD_Lock didReq;
-  diagResponse HCP5_Diag_PD.SFD_Lock didResp;
+  diagRequest  HCP5_Diag_PD.* didReq;
+  diagResponse HCP5_Diag_PD.* didResp;
 
   byte readBuf[4095];
   byte reqRaw[3];
